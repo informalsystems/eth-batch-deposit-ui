@@ -1,0 +1,164 @@
+/* styles.css */
+
+body {
+  padding-top: 0px;
+  background: linear-gradient(45deg, #ffdee3, #ffffff, #dbc6db);
+  background-attachment: fixed;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+}
+p,
+input,
+button,
+h1,
+h2,
+h3,
+a {
+  font-family: "Noto Sans", sans-serif;
+  letter-spacing: 0.5px;
+  color: rgb(44, 44, 44);
+}
+
+a {
+  color: #661ec4;
+}
+.container {
+  margin: auto;
+  text-align: center;
+  padding: 20px;
+  max-width: 1400px;
+}
+
+.grid-bg {
+  background-color: #fdf7fd;
+  border-radius: 15px;
+  padding: 30px;
+}
+
+.logo {
+  display: block;
+  margin: 0 auto;
+  text-align: center;
+  width: 80%;
+}
+
+.header {
+  font-size: 33px;
+}
+
+.top {
+  margin-bottom: 30px;
+}
+
+.align {
+  display: grid;
+  place-items: center;
+}
+.align a,
+.align p {
+  width: 100%;
+}
+
+.menuButton {
+  margin: 20px 0px 0px 0px;
+  padding: 10px 15px;
+  width: 97%;
+  background-color: #661ec4;
+  border-radius: 8px;
+}
+.menuButton a {
+  color: white;
+  text-transform: capitalize;
+}
+
+.steps p {
+  text-align: left;
+  font-size: 14px;
+}
+.steps i {
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+.disabled {
+  background-color: dimgrey !important;
+}
+
+input {
+  width: 80%;
+  padding: 10px;
+  margin-bottom: 20px;
+  background-color: #661ec4;
+  color: white;
+  border: none;
+  border-radius: 10px;
+}
+
+.button {
+  padding: 10px 30px;
+  margin: 15px;
+  background-color: #661ec4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.networkButton {
+  padding: 6px 30px;
+  width: 100% !important;
+  background-color: #951ec4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.spacer {
+  margin-bottom: 30px;
+}
+
+.disclaimer {
+  font-size: 12px;
+  text-align: center;
+  margin: 0 15% 0 15%;
+}
+
+.error {
+  color: rgb(105, 5, 5);
+  font-weight: bold;
+  font-size: 1.3em;
+}
+
+.terms {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  max-width: 800px;
+}
+
+.terms div {
+  text-align: center;
+  padding: 20px;
+  border-width: 1px 8px 8px 1px;
+  border-style: solid;
+  border-color: #faeefd;
+  border-radius: 8px;
+  background-color: #ffffff;
+}
+
+.terms h2 {
+  font-size: 28px;
+  text-decoration: underline;
+  margin-bottom: 20px;
+}
+
+.terms p {
+  margin-bottom: 35px;
+}
+.terms div label input {
+  width: 20px;
+}
