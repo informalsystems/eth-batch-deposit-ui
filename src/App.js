@@ -332,7 +332,7 @@ function App() {
   // Check if pubkeys have been used and put in arrays for batch deposit
   useEffect(() => {
     const fetchData = async () => {
-      if (!fileContent) {
+      if (!fileContent || !account) {
         return;
       }
 
@@ -341,23 +341,25 @@ function App() {
       const includeIndex = [];
       const excludeIndex = [];
 
-      if (data && currentNetwork && account) {
-        const accountSubstr = account.slice(-40).toUpperCase();
-        for (let j in data) {
-          const withdrawalSubstr = data[j].withdrawal_credentials.slice(-40).toUpperCase();
-          if (data[j].network_name !== currentNetwork) {
-            setErr(
-              "Current network " +
-                currentNetwork +
-                " does not match deposit_data intended network " +
-                data[j].network_name
-            );
-            return;
-          } else if (withdrawalSubstr !== accountSubstr) {
-            setErr("withdrawal_credentials in deposit data does not match current metamask account");
-            return;
-          }
-        } 
+      const accountSubstr = account.slice(-40).toUpperCase();
+      for (let j in data) {
+        const withdrawalSubstr = data[j].withdrawal_credentials
+          .slice(-40)
+          .toUpperCase();
+        if (data[j].network_name !== currentNetwork) {
+          setErr(
+            "Current network " +
+              currentNetwork +
+              " does not match deposit_data intended network " +
+              data[j].network_name
+          );
+          return;
+        } else if (withdrawalSubstr !== accountSubstr) {
+          setErr(
+            "withdrawal_credentials in deposit data does not match current metamask account"
+          );
+          return;
+        }
       }
 
       if (data && data.length < maxVal) {
