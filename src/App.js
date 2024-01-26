@@ -341,8 +341,10 @@ function App() {
       const includeIndex = [];
       const excludeIndex = [];
 
-      if (data && currentNetwork) {
+      if (data && currentNetwork && account) {
+        const accountSubstr = account.slice(-40).toUpperCase();
         for (let j in data) {
+          const withdrawalSubstr = data[j].withdrawal_credentials.slice(-40).toUpperCase();
           if (data[j].network_name !== currentNetwork) {
             setErr(
               "Current network " +
@@ -351,8 +353,11 @@ function App() {
                 data[j].network_name
             );
             return;
+          } else if (withdrawalSubstr !== accountSubstr) {
+            setErr("withdrawal_credentials in deposit data does not match current metamask account");
+            return;
           }
-        }
+        } 
       }
 
       if (data && data.length < maxVal) {
@@ -423,7 +428,7 @@ function App() {
     };
 
     fetchData();
-  }, [fileContent, currentNetwork]);
+  }, [fileContent, currentNetwork, account]);
 
   // App UI
   return (
