@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Web3 from "web3";
-import "./styles.css";
-import "./table.css";
+import ".styles/styles.css";
+import ".styles/table.css";
 import axios from "axios";
-import TermsAndConditions from "./Terms";
-import abi from "./abi.json";
-import Logo from "./logo-informal.svg";
+import TermsAndConditions from "./components/Terms";
+import abi from ".assets/abi.json";
+import Logo from "./assets/logo-informal.svg";
 
 console.clear();
 
@@ -255,11 +255,9 @@ function App() {
   // Parse ETH smart contract ABI
   useEffect(() => {
     if (web3 && contractAddressInput) {
-      const contractABI = abi;
-
       try {
         const contractInstance = new web3.eth.Contract(
-          contractABI,
+          abi,
           contractAddressInput
         );
         setContract(contractInstance);
