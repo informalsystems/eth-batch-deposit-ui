@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Web3 from "web3";
-import ".styles/styles.css";
-import ".styles/table.css";
+/* import "./styles/styles.css"; */
+import "./styles/base.css";
 import axios from "axios";
 import TermsAndConditions from "./components/Terms";
-import abi from ".assets/abi.json";
-import Logo from "./assets/logo-informal.svg";
+import abi from "./assets/abi.json";
+import Logo from "./assets/is.png";
 
 console.clear();
 
@@ -432,29 +432,135 @@ function App() {
 
   // App UI
   return (
-    <div className="container">
+    <div>
       {!isTermsAgreed ? (
         <TermsAndConditions onAgree={handleAgree} />
       ) : (
         <div>
-          <div className="top grid grid-cols-3 gap-4">
-            <div className="col-span-1 p-4">
-              <a
-                target="_blank"
-                rel="noreferrer"
-                href="https://informal.systems"
-              >
-                <img
-                  src={Logo}
-                  alt="Logo"
-                  className="logo w-44 pt-1 pb-2 hover:opacity-70 transition ease-in-out duration-200"
-                />
-              </a>
+          <div className="header p-6">
+            <div className="flex justify-center">
+              <div className="menu-bar grid grid-cols-12 gap-4">
+                <div className="col-span-3">
+                  <a
+                    target="_blank"
+                    rel="noreferrer"
+                    href="https://informal.systems"
+                  >
+                    <img
+                      src={Logo}
+                      alt="Logo"
+                      className="logo w-16 grayscale-image"
+                    />
+                  </a>
+                </div>
+                <div className="col-span-7">
+                  <div className="menu-links">
+                    <a href="https://informal.systems">informal systems</a>
+                    <a href="https://informal.systems">rewards dashboard</a>
+                    <a href="https://informal.systems">stake with us</a>
+                    <a href="https://informal.systems">batch deposit</a>
+                  </div>
+                </div>
+                <div className="col-span-2 text-right">
+                  <h3 className="font-bold">WELCOME</h3>
+                  <p className="text-sm">
+                    {account.slice(0, 6)}...{account.slice(-6)}
+                  </p>
+                </div>
+              </div>
             </div>
+            <div className="flex justify-center p-6">
+              <div className="title-bar grid grid-cols-12 gap-4 align-bottom">
+                <div className="col-span-8">
+                  <h1 className="text-6xl title-font">
+                    Batch Deposit<br></br>Ethereum Validators
+                  </h1>
+                  <i className="text-sm">...Powered by Informal Systems</i>
+                </div>
+                <div className="col-span-4 border radius p-4">
+                  <div class="flex items-center p-4 text-xs">
+                    <div>
+                      <p className="text-xl font-bold pb-4">Welcome!</p>
+                      <p>
+                        <i className="border circle mr-3 mb-2 fas fa-1 fa-2xs"></i>
+                        Connect to Metamask and switch to desired network.
+                      </p>
+                      <p>
+                        <i className="border circle mr-3 mb-2 fas fa-2 fa-2xs"></i>
+                        Upload your <b>deposit_data.json</b>
+                      </p>
+                      <p>
+                        <i className="border circle mr-3 mb-2 fas fa-3 fa-2xs"></i>
+                        Confirm and sign transaction on Metamask.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-center">
+            <div className="main mt-10">
+              <div className="grid grid-cols-12 gap-5">
+                <div className="col-span-6 bg-white radius">
+                  <div className="card-header bg text-white radius-top">
+                    <p className="p-4">Network Details</p>
+                  </div>
+                  <div className="p-4 flex justify-center">
+                    <div className="grid grid-cols-3 gap-4 bt wd100 text-center">
+                      <div className="col-span-1">
+                        <p className="text-2xs pt-1">Select network:</p>
+                      </div>
+                      <div className="col-span-1">
+                        <button className="border radius">Mainnet</button>
+                      </div>
+                      <div className="col-span-1">
+                        <button className="border radius">Holesky</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="hr ml-4 mr-4"></div>
+                  <div className="p-4">
+                    <div className="p-2">asdf</div>
+                  </div>
+                </div>
+                <div className="col-span-3 bg-faded radius">
+                  <div className="card-header bg text-white radius-top">
+                    <p className="p-4">Upload Your File</p>
+                  </div>
+                  <div className="flex justify-center items-center">
+                    <div className="p-4 text-white text-center">
+                      <i className="fa fa-file-code fa-2xl mt-10"></i>
+                      <div className="p-2">asdf</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-span-3 bg-white radius">
+                  <div className="card-header highlight text-white radius-top">
+                    <p className="p-4">Transaction Details</p>
+                  </div>
+                  <div className="p-4">
+                    <div className="p-2">asdf</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <br></br>
+          <br></br>
+          <br></br>
+          <br></br>
+          <br></br>
+          <br></br>
+          <br></br>
+          <hr></hr>
+          {/*  OLD VERSION  */}
+          <div className="top grid grid-cols-3 gap-4">
+            <div className="col-span-1 p-4"></div>
             <div className="align-title col-span-2 p-4">
               <div className="grid grid-cols-3">
                 <div className="col-span-3 p-2">
-                  <h1 className="header">
+                  <h1 className="title">
                     <b>Batch Deposit Ethereum Validators</b>
                   </h1>
                 </div>
