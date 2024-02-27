@@ -1,21 +1,28 @@
 @font-face {
   font-family: "Glegoo-regular";
   src: url("../assets/Glegoo-Regular.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
 }
 
 @font-face {
   font-family: "Glegoo-bold";
   src: url("../assets/Glegoo-Bold.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
+}
+
+@font-face {
+  font-family: "Inter-regular";
+  src: url("../assets/Inter-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Inter-thin";
+  src: url("../assets/Inter-Thin.ttf") format("truetype");
 }
 
 /* BASICS */
 
-body {
+.page {
   background-color: rgb(238, 238, 238);
+  font-family: "Inter-regular" !important;
 }
 
 .radius {
@@ -28,7 +35,8 @@ body {
 .error {
   color: rgb(105, 5, 5);
   font-weight: bold;
-  font-size: 1.3em;
+  font-size: 0.8em;
+  padding: 15px;
 }
 
 .bt {
@@ -41,7 +49,7 @@ button {
 }
 
 .hr {
-  height: 4px;
+  height: 2px;
   background-color: rgb(238, 238, 238);
   border-radius: 4px;
 }
@@ -52,6 +60,18 @@ button {
 
 .wd100 {
   width: 100%;
+}
+
+.h100 {
+  height: 100%;
+}
+
+.border-white {
+  border-color: white;
+}
+
+.network-ico {
+  font-size: 25px;
 }
 
 /*   HEADER   */
@@ -93,7 +113,7 @@ button {
 .menu-links a {
   padding-right: 25px;
   text-transform: uppercase;
-  color: rgb(189, 189, 189);
+  color: rgb(214, 214, 214);
 }
 
 .circle {
@@ -104,25 +124,64 @@ button {
   padding: 8px 10px 10px 6px;
 }
 
+/*   MAIN    */
+
+.ico {
+  color: #2f87a5;
+}
+
+.text-gray {
+  color: gray;
+  text-transform: uppercase;
+}
+
+.file-upload {
+  border-color: white;
+  color: white;
+}
+
+input[type="file"]::file-selector-button {
+  border: 2px solid #0b2d7c;
+  padding: 0.2em 0.4em;
+  border-radius: 0.2em;
+  background-color: #0b2d7c;
+  transition: 0.2s;
+  color: white;
+  font-size: 15px;
+}
+
+input[type="file"]::file-selector-button:hover {
+  background-color: #2f87a5;
+  border: 2px solid #2f87a5;
+}
+
+.upload-ico {
+  font-size: 70px;
+}
+.sign-ico {
+  color: #2f87a5;
+  font-size: 70px;
+}
+
 /* TERMS */
 
 .terms {
   margin: 0;
   display: flex;
-  align-items: center;
+  align-items: center !important;
   justify-content: center;
   height: 100vh;
-  max-width: 800px;
+  width: 100%;
+  background-color: #9dabcb;
+  color: white;
 }
 
 .terms div {
+  max-width: 800px;
   text-align: center;
-  padding: 20px;
-  border-width: 1px 8px 8px 1px;
-  border-style: solid;
-  border-color: #faeefd;
+  padding: 40px;
   border-radius: 8px;
-  background-color: #ffffff;
+  background-color: #0b2d7c;
 }
 
 .terms h2 {
@@ -136,4 +195,14 @@ button {
 }
 .terms div label input {
   width: 20px;
+}
+.terms-button {
+  border-width: 1px;
+  border-color: white;
+  padding: 6px 40px;
+  transition: 0.2s;
+}
+.terms-button:hover {
+  background-color: #2f87a5;
+  border: 1px solid white;
 }

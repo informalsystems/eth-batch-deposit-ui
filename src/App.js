@@ -432,7 +432,7 @@ function App() {
 
   // App UI
   return (
-    <div>
+    <div className="page">
       {!isTermsAgreed ? (
         <TermsAndConditions onAgree={handleAgree} />
       ) : (
@@ -454,7 +454,7 @@ function App() {
                   </a>
                 </div>
                 <div className="col-span-7">
-                  <div className="menu-links">
+                  <div className="menu-links text-sm tracking-wider">
                     <a href="https://informal.systems">informal systems</a>
                     <a href="https://informal.systems">rewards dashboard</a>
                     <a href="https://informal.systems">stake with us</a>
@@ -462,10 +462,21 @@ function App() {
                   </div>
                 </div>
                 <div className="col-span-2 text-right">
-                  <h3 className="font-bold">WELCOME</h3>
-                  <p className="text-sm">
-                    {account.slice(0, 6)}...{account.slice(-6)}
-                  </p>
+                  {account ? (
+                    <>
+                      <h3 className="font-bold text-sm">WELCOME</h3>
+                      <p className="text-sm">
+                        {account.slice(0, 6)}...{account.slice(-6)}
+                      </p>
+                    </>
+                  ) : (
+                    <button
+                      className="text-right border radius border-white text-sm p-2"
+                      onClick={loadWeb3}
+                    >
+                      Connect Metamask
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -480,67 +491,233 @@ function App() {
                 <div className="col-span-4 border radius p-4">
                   <div class="flex items-center p-4 text-xs">
                     <div>
-                      <p className="text-xl font-bold pb-4">Welcome!</p>
-                      <p>
-                        <i className="border circle mr-3 mb-2 fas fa-1 fa-2xs"></i>
-                        Connect to Metamask and switch to desired network.
+                      <p className="text-2xl font-bold pb-4 title-font">
+                        Welcome!
                       </p>
-                      <p>
-                        <i className="border circle mr-3 mb-2 fas fa-2 fa-2xs"></i>
-                        Upload your <b>deposit_data.json</b>
-                      </p>
-                      <p>
-                        <i className="border circle mr-3 mb-2 fas fa-3 fa-2xs"></i>
-                        Confirm and sign transaction on Metamask.
-                      </p>
+                      <div>
+                        <div className="grid grid-cols-12 mb-3 items-center">
+                          <div className="col-span-1">
+                            <i className="border circle mr-3 fas fa-1 fa-2xs"></i>
+                          </div>
+                          <div className="col-span-11 ml-2">
+                            <p>
+                              Connect to Metamask and switch to desired network.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="grid grid-cols-12 mb-3 items-center">
+                          <div className="col-span-1">
+                            <i className="border circle mr-3 fas fa-2 fa-2xs"></i>
+                          </div>
+                          <div className="col-span-11 ml-2">
+                            <p>
+                              Upload your <b>deposit_data.json</b>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-12 mb-3 items-center">
+                        <div className="col-span-1">
+                          <i className="border circle mr-3 fas fa-3 fa-2xs"></i>
+                        </div>
+                        <div className="col-span-11 ml-2">
+                          <p>Confirm and sign transaction on Metamask.</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+
           <div className="flex justify-center">
-            <div className="main mt-10">
+            <div className="main mt-6">
               <div className="grid grid-cols-12 gap-5">
+                {/*  NETWORK DETAILS  */}
                 <div className="col-span-6 bg-white radius">
                   <div className="card-header bg text-white radius-top">
-                    <p className="p-4">Network Details</p>
+                    <p className="p-4 title-font text-lg">Network Details</p>
                   </div>
                   <div className="p-4 flex justify-center">
                     <div className="grid grid-cols-3 gap-4 bt wd100 text-center">
-                      <div className="col-span-1">
+                      <div className="col-span-1 ml-4">
                         <p className="text-2xs pt-1">Select network:</p>
                       </div>
                       <div className="col-span-1">
-                        <button className="border radius">Mainnet</button>
+                        <button
+                          className={
+                            currentNetwork === "mainnet"
+                              ? "border radius bg text-white"
+                              : "border radius"
+                          }
+                          onClick={() => setNetwork("1")}
+                        >
+                          Mainnet
+                        </button>
                       </div>
                       <div className="col-span-1">
-                        <button className="border radius">Holesky</button>
+                        <button
+                          className={
+                            currentNetwork === "holesky"
+                              ? "border radius bg text-white"
+                              : "border radius"
+                          }
+                          onClick={() => setNetwork("4268")}
+                        >
+                          Holesky
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="hr ml-4 mr-4"></div>
+                  <div className="p-4 bt">
+                    <div className="p-2">
+                      <div className="grid grid-cols-12 items-center">
+                        <div className="col-span-1">
+                          <i className="fa fa-balance-scale network-ico"></i>
+                        </div>
+                        <div className="col-span-11">
+                          <p className="text-lg">{account}</p>
+                        </div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-11 text-gray text-xs mt-1">
+                          <p>connected account</p>
+                        </div>
                       </div>
                     </div>
                   </div>
                   <div className="hr ml-4 mr-4"></div>
-                  <div className="p-4">
-                    <div className="p-2">asdf</div>
+                  <div className="p-4 bt">
+                    <div className="p-2">
+                      <div className="grid grid-cols-12">
+                        <div className="col-span-1">
+                          <i className="fa fa-wallet network-ico"></i>
+                        </div>
+                        <div className="col-span-11">
+                          <p className="text-lg">
+                            {balance} {currency}
+                          </p>
+                        </div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-11 text-gray text-xs mt-1">
+                          <p>wallet balance</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="col-span-3 bg-faded radius">
-                  <div className="card-header bg text-white radius-top">
-                    <p className="p-4">Upload Your File</p>
+                  <div className="hr ml-4 mr-4"></div>
+                  <div className="p-4 bt">
+                    <div className="p-2">
+                      <div className="grid grid-cols-12">
+                        <div className="col-span-1">
+                          <i className="fa fa-file network-ico"></i>
+                        </div>
+                        <div className="col-span-11">
+                          <a href={contractAddressURL} target="blank">
+                            <p className="text-lg">{contractAddressInput}</p>
+                          </a>
+                        </div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-11 text-gray text-xs mt-1">
+                          <p>deposit contract</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex justify-center items-center">
-                    <div className="p-4 text-white text-center">
-                      <i className="fa fa-file-code fa-2xl mt-10"></i>
-                      <div className="p-2">asdf</div>
+                  <div className="hr ml-4 mr-4"></div>
+                  <div className="p-4 bt">
+                    <div className="p-2">
+                      <div className="grid grid-cols-12">
+                        <div className="col-span-1">
+                          <i className="fa fa-copy network-ico"></i>
+                        </div>
+                        <div className="col-span-11">
+                          <p className="text-lg">
+                            {maxVal * 32} {currency}
+                          </p>
+                        </div>
+                        <div className="col-span-1"></div>
+                        <div className="col-span-11 text-gray text-xs mt-1">
+                          <p>max amount per tx</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
+
+                {/* FILE UPLOAD */}
+                <div className="col-span-3 bg-faded radius">
+                  <div className="">
+                    <div className="grid grid-cols-1">
+                      <div className="col-span-1">
+                        <div className="card-header bg text-white radius-top">
+                          <p className="p-4 title-font text-lg">
+                            Upload Your File
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 p-6">
+                      <div className="col-span-1 pt-20">
+                        <div className="text-white text-center">
+                          <i className="fa fa-file-code mt-2 upload-ico"></i>
+                          <p className="pt-6 text-lg">
+                            Upload your deposit_data.json file to proceed
+                          </p>
+                          <input
+                            type="file"
+                            accept=".json"
+                            onChange={handleFileUpload}
+                            ref={fileInputRef}
+                            id="file"
+                            className="file-upload text-center pt-6"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* TRANSACTION DETAILS */}
                 <div className="col-span-3 bg-white radius">
                   <div className="card-header highlight text-white radius-top">
-                    <p className="p-4">Transaction Details</p>
+                    <p className="p-4 title-font text-lg">
+                      Transaction Details
+                    </p>
                   </div>
-                  <div className="p-4">
-                    <div className="p-2">asdf</div>
+                  <div className="grid grid-cols-1 bt pt-6">
+                    <div className="col-span-1 pt-20">
+                      <div className="text-center">
+                        <i className="fa fa-file mt-2 sign-ico"></i>
+                        <br></br>
+                        <button
+                          onClick={handleSendTransaction}
+                          className="text-white radius highlight pt-2 pb-2 pl-6 pr-6 m-6"
+                        >
+                          Sign Transaction
+                        </button>
+                      </div>
+                    </div>
+                    <div className="col-span-1">
+                      <p className="text-center">
+                        {err ? (
+                          <div>
+                            {err ? (
+                              <p className="error">Error: {err}</p>
+                            ) : (
+                              <></>
+                            )}
+                          </div>
+                        ) : (
+                          <></>
+                        )}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -554,7 +731,8 @@ function App() {
           <br></br>
           <br></br>
           <hr></hr>
-          {/*  OLD VERSION  */}
+
+          {/* vvvvvvvvvv OLD VERSION --- TO BE REMOVED AFTER REFACTOR vvvvvvv */}
           <div className="top grid grid-cols-3 gap-4">
             <div className="col-span-1 p-4"></div>
             <div className="align-title col-span-2 p-4">

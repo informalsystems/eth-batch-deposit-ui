@@ -45,11 +45,14 @@ const TermsAndConditions = ({ onAgree }) => {
         </label>
         <br></br>
         {isChecked ? (
-          <button className="button" onClick={handleAgreeClick}>
+          <button
+            className="terms-button radius mt-4"
+            onClick={handleAgreeClick}
+          >
             Continue
           </button>
         ) : (
-          <button className="button disabled">Continue</button>
+          <button className="terms-button radius mt-4">Continue</button>
         )}
       </div>
     </div>
