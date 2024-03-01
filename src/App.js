@@ -4,8 +4,16 @@ import Web3 from "web3";
 import "./styles/base.css";
 import axios from "axios";
 import TermsAndConditions from "./components/Terms";
+import Pubkeys from "./components/Pubkeys";
 import abi from "./assets/abi.json";
-import Logo from "./assets/is.png";
+import Logo from "./assets/Informal_Mark.png";
+import Upload from "./assets/icons/Upload.png";
+import Sign from "./assets/icons/Sign.png";
+import Connection_navy from "./assets/icons/Connection_navy.png";
+import Wallet_navy from "./assets/icons/Wallet_navy.png";
+import Contract_navy from "./assets/icons/Contract_navy.png";
+import Maximum_navy from "./assets/icons/Maximum_navy.png";
+import Alert from "./assets/icons/Alert.png";
 
 console.clear();
 
@@ -25,7 +33,6 @@ function App() {
   const [contractAddressInput, setContractAddress] = useState("");
   const [contractAddressURL, setContractAddressURL] = useState("");
   const [err, setErr] = useState("");
-  const [browser, setBrowser] = useState(null);
   const [isTermsAgreed, setTermsAgreed] = useState(false);
   const network = useState(null);
   const fileInputRef = useRef();
@@ -58,19 +65,6 @@ function App() {
     }
     return "0x" + value;
   };
-
-  useEffect(() => {
-    const isNotFirefox = !/Firefox/.test(navigator.userAgent);
-
-    if (isNotFirefox) {
-      setProcessing(null);
-    } else {
-      setBrowser("firefox");
-      setErr(
-        "Please dont use Firefox, this browser has become temporarily unsupported for importing ledger devices into metamask..."
-      );
-    }
-  }, []);
 
   const handleAgree = () => {
     setTermsAgreed(true);
@@ -160,6 +154,8 @@ function App() {
         method: "wallet_switchEthereumChain",
         params: [{ chainId: `0x${networkIdNum.toString(16)}` }],
       });
+      setProcessing(null);
+      setErr(null);
     } catch (error) {
       console.error("Error switching network:", error);
     }
@@ -446,11 +442,7 @@ function App() {
                     rel="noreferrer"
                     href="https://informal.systems"
                   >
-                    <img
-                      src={Logo}
-                      alt="Logo"
-                      className="logo w-16 grayscale-image"
-                    />
+                    <img src={Logo} alt="Logo" className="logo w-16" />
                   </a>
                 </div>
                 <div className="col-span-7">
@@ -489,7 +481,7 @@ function App() {
                   <i className="text-sm">...Powered by Informal Systems</i>
                 </div>
                 <div className="col-span-4 border radius p-4">
-                  <div class="flex items-center p-4 text-xs">
+                  <div className="flex items-center p-4 text-xs">
                     <div>
                       <p className="text-2xl font-bold pb-4 title-font">
                         Welcome!
@@ -544,26 +536,26 @@ function App() {
                   <div className="p-4 flex justify-center">
                     <div className="grid grid-cols-3 gap-4 bt wd100 text-center">
                       <div className="col-span-1 ml-4">
-                        <p className="text-2xs pt-1">Select network:</p>
+                        <p className="text-xs pt-1">Select network:</p>
                       </div>
-                      <div className="col-span-1">
+                      <div className="col-span-1 text-sm">
                         <button
                           className={
                             currentNetwork === "mainnet"
-                              ? "border radius bg text-white"
-                              : "border radius"
+                              ? "border br-color-blue radius bg text-white network-button"
+                              : "border br-color-blue radius network-button"
                           }
                           onClick={() => setNetwork("1")}
                         >
                           Mainnet
                         </button>
                       </div>
-                      <div className="col-span-1">
+                      <div className="col-span-1  text-sm">
                         <button
                           className={
                             currentNetwork === "holesky"
-                              ? "border radius bg text-white"
-                              : "border radius"
+                              ? "border br-color-blue radius bg text-white network-button"
+                              : "border br-color-blue radius network-button"
                           }
                           onClick={() => setNetwork("4268")}
                         >
@@ -578,10 +570,16 @@ function App() {
                     <div className="p-2">
                       <div className="grid grid-cols-12 items-center">
                         <div className="col-span-1">
-                          <i className="fa fa-balance-scale network-ico"></i>
+                          <img
+                            alt=""
+                            src={Connection_navy}
+                            className="network-ico"
+                          ></img>
                         </div>
                         <div className="col-span-11">
-                          <p className="text-lg">{account}</p>
+                          <p className="text-lg">
+                            {account ? account : "...please connect Metamask"}
+                          </p>
                         </div>
                         <div className="col-span-1"></div>
                         <div className="col-span-11 text-gray text-xs mt-1">
@@ -595,11 +593,21 @@ function App() {
                     <div className="p-2">
                       <div className="grid grid-cols-12">
                         <div className="col-span-1">
-                          <i className="fa fa-wallet network-ico"></i>
+                          <img
+                            alt=""
+                            src={Wallet_navy}
+                            className="network-ico"
+                          ></img>
                         </div>
                         <div className="col-span-11">
                           <p className="text-lg">
-                            {balance} {currency}
+                            {account ? (
+                              <>
+                                {balance} {currency}
+                              </>
+                            ) : (
+                              "..."
+                            )}
                           </p>
                         </div>
                         <div className="col-span-1"></div>
@@ -614,11 +622,17 @@ function App() {
                     <div className="p-2">
                       <div className="grid grid-cols-12">
                         <div className="col-span-1">
-                          <i className="fa fa-file network-ico"></i>
+                          <img
+                            alt=""
+                            src={Contract_navy}
+                            className="network-ico"
+                          ></img>
                         </div>
                         <div className="col-span-11">
                           <a href={contractAddressURL} target="blank">
-                            <p className="text-lg">{contractAddressInput}</p>
+                            <p className="text-lg">
+                              {account ? <>{contractAddressInput}</> : "..."}
+                            </p>
                           </a>
                         </div>
                         <div className="col-span-1"></div>
@@ -633,11 +647,21 @@ function App() {
                     <div className="p-2">
                       <div className="grid grid-cols-12">
                         <div className="col-span-1">
-                          <i className="fa fa-copy network-ico"></i>
+                          <img
+                            alt=""
+                            src={Maximum_navy}
+                            className="network-ico"
+                          ></img>
                         </div>
                         <div className="col-span-11">
                           <p className="text-lg">
-                            {maxVal * 32} {currency}
+                            {account ? (
+                              <>
+                                {maxVal * 32} {currency}
+                              </>
+                            ) : (
+                              "..."
+                            )}
                           </p>
                         </div>
                         <div className="col-span-1"></div>
@@ -650,11 +674,11 @@ function App() {
                 </div>
 
                 {/* FILE UPLOAD */}
-                <div className="col-span-3 bg-faded radius">
+                <div className="col-span-3 bg-white radius">
                   <div className="">
                     <div className="grid grid-cols-1">
                       <div className="col-span-1">
-                        <div className="card-header bg text-white radius-top">
+                        <div className="card-header highlight text-white radius-top">
                           <p className="p-4 title-font text-lg">
                             Upload Your File
                           </p>
@@ -662,284 +686,160 @@ function App() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 p-6">
-                      <div className="col-span-1 pt-20">
-                        <div className="text-white text-center">
-                          <i className="fa fa-file-code mt-2 upload-ico"></i>
-                          <p className="pt-6 text-lg">
-                            Upload your deposit_data.json file to proceed
-                          </p>
-                          <input
-                            type="file"
-                            accept=".json"
-                            onChange={handleFileUpload}
-                            ref={fileInputRef}
-                            id="file"
-                            className="file-upload text-center pt-6"
-                          />
+                    <div className="flex justify-center">
+                      <div className="grid grid-cols-1 p-6">
+                        <div className="col-span-1 pt-20">
+                          <div className="bt text-center">
+                            <img
+                              src={Upload}
+                              alt=""
+                              className="upload-ico img-center"
+                            ></img>
+                            <p className="pt-6 text-lg">
+                              Upload your deposit_data.json file to proceed
+                            </p>
+                            <input
+                              type="file"
+                              accept=".json"
+                              onChange={handleFileUpload}
+                              ref={fileInputRef}
+                              id="file"
+                              className="file-upload text-center pt-6"
+                            />
+                            <p>{processing}</p>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* TRANSACTION DETAILS */}
-                <div className="col-span-3 bg-white radius">
-                  <div className="card-header highlight text-white radius-top">
-                    <p className="p-4 title-font text-lg">
-                      Transaction Details
-                    </p>
+                {/* TRANSACTION */}
+                <div className="col-span-3 bg-faded radius">
+                  <div className="card-header bg text-white radius-top">
+                    <p className="p-4 title-font text-lg">Transaction</p>
                   </div>
                   <div className="grid grid-cols-1 bt pt-6">
-                    <div className="col-span-1 pt-20">
+                    <div className="col-span-1 mt-28">
                       <div className="text-center">
-                        <i className="fa fa-file mt-2 sign-ico"></i>
-                        <br></br>
-                        <button
-                          onClick={handleSendTransaction}
-                          className="text-white radius highlight pt-2 pb-2 pl-6 pr-6 m-6"
-                        >
-                          Sign Transaction
-                        </button>
+                        <img
+                          alt=""
+                          src={Sign}
+                          className="img-center sign-ico"
+                        ></img>
+                        {sendContractData && account ? (
+                          <div>
+                            <button
+                              onClick={handleSendTransaction}
+                              className="text-white radius bg text-upper text-sm m-6 pt-2 pb-2 pl-6 pr-6"
+                            >
+                              Sign Transaction
+                            </button>
+
+                            <div>
+                              <div></div>
+                              {transactionResponse ? (
+                                <div>
+                                  <p>TX Response:</p>
+                                  <p>{transactionResponse}</p>
+                                </div>
+                              ) : (
+                                <div></div>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <button className="text-white radius bg text-upper text-sm m-6 pt-2 pb-2 pl-6 pr-6">
+                              Sign Transaction
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="col-span-1">
-                      <p className="text-center">
-                        {err ? (
-                          <div>
-                            {err ? (
-                              <p className="error">Error: {err}</p>
-                            ) : (
-                              <></>
-                            )}
-                          </div>
+                      {err ? (
+                        <div>
+                          {err ? (
+                            <div className="error error-block">
+                              <img
+                                alt=""
+                                src={Alert}
+                                className="alert img-center"
+                              ></img>
+                              <p className="text-center mt-2">{err}</p>
+                            </div>
+                          ) : (
+                            <></>
+                          )}
+                        </div>
+                      ) : (
+                        <></>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/*    FULL TRANSACTION DETAILS TABLE    */}
+          <div className="flex justify-center pt-5">
+            <div className="grid grid-cols-1 pubkeys bg-white">
+              <div className="col-span-1">
+                <div className="card-header bg text-white radius-top">
+                  <div className="grid grid-cols-11 items-center p-2">
+                    <div className="col-span-5">
+                      <p className="p-4 title-font text-lg ml-4">
+                        Transaction Details
+                      </p>
+                    </div>
+                    <div className="col-span-2 br pr-5 mr-5 text-right">
+                      <p>
+                        {includeArray ? (
+                          <p>
+                            {includeArray.length * 32} {currency}
+                          </p>
                         ) : (
-                          <></>
-                        )}
+                          <p>0 {currency}</p>
+                        )}{" "}
+                      </p>
+                      <p className="text-gr text-upper text-2xs mt-1">
+                        total {currency} to be staked
+                      </p>
+                    </div>
+                    <div className="col-span-2 br pr-5 mr-5 text-right">
+                      <p className="text-lg">
+                        {includeArray ? <p>{includeArray.length}</p> : 0}
+                      </p>
+                      <p className="text-gr text-upper text-2xs mt-1">
+                        validator count
+                      </p>
+                    </div>
+                    <div className="col-span-2 pr-5 text-right">
+                      <p className="text-lg">
+                        {excludeArray ? <p>{excludeArray.length}</p> : 0}
+                      </p>
+                      <p className="text-gr text-upper text-2xs mt-1">
+                        excluded pubkey count
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-          <br></br>
-          <br></br>
-          <br></br>
-          <br></br>
-          <br></br>
-          <br></br>
-          <br></br>
-          <hr></hr>
-
-          {/* vvvvvvvvvv OLD VERSION --- TO BE REMOVED AFTER REFACTOR vvvvvvv */}
-          <div className="top grid grid-cols-3 gap-4">
-            <div className="col-span-1 p-4"></div>
-            <div className="align-title col-span-2 p-4">
-              <div className="grid grid-cols-3">
-                <div className="col-span-3 p-2">
-                  <h1 className="title">
-                    <b>Batch Deposit Ethereum Validators</b>
-                  </h1>
-                </div>
-                <div className="menuButton col-span-1">
-                  <a href="https://informal.systems">informal systems</a>
-                </div>
-                <div className="menuButton col-span-1">
-                  <a href="https://informal.systems">rewards dashboard</a>
-                </div>
-                <div className="menuButton col-span-1">
-                  <a href="https://informal.systems/staking">stake with us</a>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <br></br>
-          <div className="grid grid-cols-3 gap-4">
-            <div className="align steps col-span-1 grid-bg p-4">
-              <p>
-                <i>Step 1: </i> Connect metamask and switch to desired network.
-              </p>
-              <p>
-                <i>Step 2: </i> Upload your <i>deposit_data.json</i> below.
-              </p>
-              <p>
-                <i>Step 3: </i> Confirm and sign transaction in metamask.
-              </p>
-              <a href="https://informal.systems">
-                Learn how to stake on more networks with <b>Informal Systems</b>
-              </a>
-            </div>
-            <div className="col-span-2 grid-bg p-4">
-              <div className="grid grid-cols-4">
-                <div className="align col-span-1">
-                  <h2>Select Network: </h2>
-                </div>
-                <div className="col-span-1 p-1">
-                  <button
-                    className={`networkButton ${
-                      currentNetwork !== "mainnet" ? "disabled" : ""
-                    }`}
-                    onClick={() => setNetwork("1")}
-                  >
-                    Mainnet
-                  </button>
-                </div>
-                <div className="col-span-1 p-1">
-                  <button
-                    className={`networkButton ${
-                      currentNetwork !== "holesky" ? "disabled" : ""
-                    }`}
-                    onClick={() => setNetwork("4268")}
-                  >
-                    Holesky
-                  </button>
-                </div>
-                <div className="col-span-1 p-1">
-                  <button
-                    className={`networkButton ${
-                      currentNetwork !== "goerli" ? "disabled" : ""
-                    }`}
-                    onClick={() => setNetwork("5")}
-                  >
-                    Goerli
-                  </button>
-                </div>
-              </div>
-              <div>
-                {account ? (
+              <div className="col-span-1 bg-faded">
+                {includeArray && !err && !processing ? (
                   <div>
-                    <div className="grid grid-cols-3">
-                      <div className="tb tb-head tb-tl tb-tr align tb-right1 col-span-3">
-                        <p>Network Details</p>
-                      </div>
-                      <div className="tb align tb-left1 col-span-1 grid-bg">
-                        <p className="account-info">Connected Network</p>
-                      </div>
-                      <div className="tb align tb-right1 col-span-2 grid-bg">
-                        <p className="account-info">{currentNetwork}</p>
-                      </div>
-                      <div className="tb align tb-left2 col-span-1 grid-bg">
-                        <p className="account-info">Connected Account</p>
-                      </div>
-                      <div className="tb align tb-right2 col-span-2 grid-bg">
-                        <p className="account-info">{account}</p>
-                      </div>
-                      <div className="tb align tb-left1 col-span-1 grid-bg">
-                        <p className="account-info">Wallet Balance</p>
-                      </div>
-                      <div className="tb align tb-right1 col-span-2 grid-bg">
-                        <p className="account-info">
-                          {balance} {currency}
-                        </p>
-                      </div>
-                      <div className="tb align tb-left2 col-span-1 grid-bg">
-                        <p className="account-info">Deposit Contract</p>
-                      </div>
-                      <div className="tb align tb-right2 col-span-2 grid-bg">
-                        <p className="account-info">
-                          <a
-                            rel="noreferrer"
-                            target="_blank"
-                            href={contractAddressURL}
-                            className="contract-info"
-                          >
-                            {contractAddressInput}
-                          </a>
-                        </p>
-                      </div>
-                      <div className="tb align tb-bl tb-left1 col-span-1 grid-bg">
-                        <p className="account-info">Max amount per TX</p>
-                      </div>
-                      <div className="tb align tb-br tb-right1 col-span-2 grid-bg">
-                        <p className="account-info">
-                          {maxVal * 32} {currency}
-                        </p>
-                      </div>
+                    <div className="grid grid-cols-1 p-4">
+                      <Pubkeys pubkeys={includeArray} exlcuded={excludeArray} />
                     </div>
                   </div>
                 ) : (
-                  <button className="button" onClick={loadWeb3}>
-                    Connect Metamask Wallet
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div className="align col-span-1 grid-bg p-4">
-              <div>
-                <div>
-                  <p className="p-4">
-                    Upload your
-                    <b>
-                      <i>deposit_data.json </i>
-                    </b>
-                    file to proceed...
-                  </p>
-                  {browser !== "firefox" ? (
-                    <input
-                      type="file"
-                      accept=".json"
-                      onChange={handleFileUpload}
-                      ref={fileInputRef}
-                      id="file"
-                    />
-                  ) : (
-                    <input
-                      type="file"
-                      accept=".json"
-                      ref={fileInputRef}
-                      id="file"
-                    />
-                  )}
-
-                  <br></br>
-                </div>
-              </div>
-            </div>
-            <div className="col-span-2 grid-bg p-4">
-              <div className="grid grid-cols-3">
-                <div className="tb tb-head tb-tl tb-tr align tb-right1 col-span-3">
-                  <p>Transaction Details</p>
-                </div>
-                {includeArray && !err && !processing ? (
-                  <>
-                    <div className="tb align tb-left2 col-span-1">
-                      <p>amount to stake</p>
-                    </div>
-                    <div className="tb align tb-right2 col-span-2">
-                      {includeArray ? (
-                        <p>
-                          {includeArray.length * 32} {currency}
-                        </p>
-                      ) : (
-                        <p>0</p>
-                      )}
-                    </div>
-                    <div className="tb align tb-left1 col-span-1 p-4">
-                      <p>exluded pubkeys</p>
-                    </div>
-                    <div className="tb align tb-right1 col-span-2 p-4">
-                      {excludeArray ? <p>{excludeArray.length}</p> : <p>0</p>}
-                    </div>
-                    <div className="tb tb-bl align tb-left2 col-span-1 p-4">
-                      <p>Transaction Response</p>
-                    </div>
-                    <div className="tb tb-br align tb-right2 col-span-2 p-4">
-                      {transactionResponse ? (
-                        <p>{transactionResponse}</p>
-                      ) : (
-                        <p>...waiting for signature</p>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div className="tb tb-tl tb-tr align tb-right1 col-span-3">
+                  <div>
                     {processing ? (
-                      <h2>
+                      <p className=" text-white p-6 font-lg">
                         <i>{processing}</i>
-                      </h2>
+                      </p>
                     ) : (
                       <></>
                     )}
@@ -950,52 +850,40 @@ function App() {
                     ) : (
                       <></>
                     )}
+                    {!processing && !err ? (
+                      <p className="text-white text-upper p-6 ">
+                        <i>...waiting for file upload</i>
+                      </p>
+                    ) : (
+                      <></>
+                    )}
                   </div>
                 )}
               </div>
-              {sendContractData && account && browser !== "firefox" ? (
-                <div>
-                  <br></br>
-                  <button onClick={handleSendTransaction} className="button">
-                    Sign Transaction
-                  </button>
-
-                  <div>
-                    <div></div>
-                    {transactionResponse ? (
-                      <div>
-                        <p>Transaction Response:</p>
-                        <p>{transactionResponse}</p>
-                      </div>
-                    ) : (
-                      <div></div>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div>
-                  <button className="button disabled">Sign Transaction</button>
-                </div>
-              )}
             </div>
           </div>
-          <div className="spacer"></div>
-          <p>
-            <i>
-              If any have any problems, please reach out to
-              validator@informal.systems
-            </i>
-          </p>
-          <p className="disclaimer">
-            This is for testing purposes only. Please use Chrome browser. Ensure
-            pubkeys have not been added to chain already before depositing. If
-            ledger is making you verify many fields, turn off `Debug data` in
-            Ethereum App settings. If transaction fails do not try again.
-          </p>
-          <p>
-            exluded pubkeys are validator signing keys that have already been
-            used and cant be used again.
-          </p>
+          <div className="flex justify-center">
+            <div className="grid grid-cols-1 disclaimer pt-6 pb-6 pl-10 pr-10 text-center text-xs">
+              <div>
+                <p>
+                  <i>
+                    If any have any problems, please reach out to
+                    validator@informal.systems
+                  </i>
+                </p>
+                <p>Do not use this tool, it is still in testing.</p>
+                <p>
+                  If ledger is making you verify many fields, turn off `Debug
+                  data` in Ethereum App settings. If transaction fails do not
+                  try again.
+                </p>
+                <p>
+                  exluded pubkeys are validator signing keys that have already
+                  been used and cant be used again.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

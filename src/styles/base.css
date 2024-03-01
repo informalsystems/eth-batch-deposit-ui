@@ -25,6 +25,10 @@
   font-family: "Inter-regular" !important;
 }
 
+.font-thin {
+  font-family: "Inter-thin" !important;
+}
+
 .radius {
   border-radius: 4px;
 }
@@ -33,19 +37,35 @@
 }
 
 .error {
-  color: rgb(105, 5, 5);
+  color: rgb(187, 2, 2);
   font-weight: bold;
   font-size: 0.8em;
   padding: 15px;
+}
+
+.error-block {
+  display: inline-block;
 }
 
 .bt {
   color: #0b2d7c;
 }
 
-button {
-  padding: 2px 30px;
-  border-color: #0b2d7c;
+.network-button {
+  padding: 4px 36px;
+  text-transform: uppercase;
+}
+
+.text-upper {
+  text-transform: uppercase;
+}
+
+.text-2xs {
+  font-size: xx-small;
+}
+
+.text-gr {
+  color: #9dabcb;
 }
 
 .hr {
@@ -70,8 +90,12 @@ button {
   border-color: white;
 }
 
-.network-ico {
-  font-size: 25px;
+.br {
+  border-right: 2px solid rgb(238, 238, 238);
+}
+
+.br-color-blue {
+  border-color: #0b2d7c;
 }
 
 /*   HEADER   */
@@ -105,7 +129,9 @@ button {
 /* MENU */
 .menu-bar,
 .title-bar,
-.main {
+.main,
+.pubkeys,
+.disclaimer {
   max-width: 1200px;
   width: 100%;
 }
@@ -137,30 +163,53 @@ button {
 
 .file-upload {
   border-color: white;
-  color: white;
+  color: #2f87a5;
 }
 
 input[type="file"]::file-selector-button {
-  border: 2px solid #0b2d7c;
+  border: 2px solid #2f87a5;
   padding: 0.2em 0.4em;
   border-radius: 0.2em;
-  background-color: #0b2d7c;
+  background-color: #2f87a5;
   transition: 0.2s;
   color: white;
   font-size: 15px;
 }
 
 input[type="file"]::file-selector-button:hover {
-  background-color: #2f87a5;
-  border: 2px solid #2f87a5;
+  background-color: #0b2d7c;
+  border: 2px solid #0b2d7c;
 }
 
+.img-center {
+  display: block;
+  margin: 0 auto;
+  padding: 0;
+}
 .upload-ico {
-  font-size: 70px;
+  width: 60px;
+  text-align: center;
 }
 .sign-ico {
-  color: #2f87a5;
-  font-size: 70px;
+  width: 80px;
+}
+
+.network-ico {
+  width: 25px;
+}
+
+/*   PUBKEYS   */
+
+.keys div:nth-child(even) {
+  background-color: #9dabcb;
+}
+.keys div:nth-child(odd) {
+  background-color: #6d81b0;
+}
+
+.excludedPubkeys {
+  color: lightgray;
+  text-decoration: line-through;
 }
 
 /* TERMS */
