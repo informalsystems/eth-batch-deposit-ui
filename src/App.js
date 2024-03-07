@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Web3 from "web3";
-/* import "./styles/styles.css"; */
-import "./styles/base.css";
-import axios from "axios";
+import "./styles/styles.css";
 import TermsAndConditions from "./components/Terms";
 import Pubkeys from "./components/Pubkeys";
+import isValidJSON from "./functions/jsonCheck";
+import addHex from "./functions/addHex";
 import abi from "./assets/abi.json";
-import Logo from "./assets/Informal_Mark.png";
+import Logo from "./assets/images/Informal_Mark.png";
 import Upload from "./assets/icons/Upload.png";
 import Sign from "./assets/icons/Sign.png";
 import Connection_navy from "./assets/icons/Connection_navy.png";
@@ -22,54 +22,21 @@ function App() {
   const [balance, setBalance] = useState("");
   const [currency, setCurrency] = useState("");
   const [web3, setWeb3] = useState(null);
-  const [contract, setContract] = useState(null);
+  const [contractABI, setContractABI] = useState(null);
   const [currentNetwork, setCurrentNetwork] = useState(null);
   const [transactionResponse, setTransactionResponse] = useState(null);
   const [fileContent, setFileContent] = useState(null);
   const [sendContractData, setSendContractData] = useState();
-  const [excludeArray, setExludeArray] = useState();
-  const [includeArray, setIncludeArray] = useState();
+  const [excludedPubkeysArray, setExcludedPubkeysArray] = useState([]);
+  const [includedPubkeysArray, setIncludedPubkeysArray] = useState([]);
   const [processing, setProcessing] = useState("");
-  const [contractAddressInput, setContractAddress] = useState("");
+  const [smartContractAddress, setSmartContractAddress] = useState("");
   const [contractAddressURL, setContractAddressURL] = useState("");
+  const [pubkeyBeconchainURL, setPubkeyBeconchainURL] = useState("");
   const [err, setErr] = useState("");
   const [isTermsAgreed, setTermsAgreed] = useState(false);
-  const network = useState(null);
   const fileInputRef = useRef();
   const maxVal = 50;
-
-  // Helper functions //
-  const isValidJSON = (jsonString) => {
-    try {
-      const js = JSON.parse(jsonString);
-      if (
-        js[0].pubkey &&
-        js[0].network_name &&
-        js[0].withdrawal_credentials &&
-        js[0].signature &&
-        js[0].deposit_data_root
-      ) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (error) {
-      console.error("File uploaded is not valid JSON: ", error);
-      return false;
-    }
-  };
-
-  const keyToHex = (value) => {
-    if (value.slice(0, 2) === "0x") {
-      return value;
-    }
-    return "0x" + value;
-  };
-
-  const handleAgree = () => {
-    setTermsAgreed(true);
-  };
-  ////////////////////////////////////////////////////
 
   // Load metamask and retreive current account
   const loadWeb3 = async () => {
@@ -91,7 +58,6 @@ function App() {
 
   useEffect(() => {
     loadWeb3();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Get balance of current account
@@ -105,7 +71,7 @@ function App() {
       }
     };
     getBalance();
-  }, [web3, account, network]);
+  }, [web3, account, currentNetwork]);
 
   // Handle file upload of deposit_data.json
   const handleFileUpload = useCallback((event) => {
@@ -121,6 +87,9 @@ function App() {
         return;
       }
       if (file && file.size < 1024 * 1024 && file.type === "application/json") {
+        setIncludedPubkeysArray([]);
+        setExcludedPubkeysArray([]);
+
         setProcessing("Parsing validator pubkeys...");
         const reader = new FileReader();
 
@@ -132,7 +101,6 @@ function App() {
           if (jsonCheck) {
             setFileContent(a);
           } else {
-            setIncludeArray(null);
             setSendContractData(null);
             setErr("Invalid file uploaded...");
             setProcessing(null);
@@ -156,6 +124,9 @@ function App() {
       });
       setProcessing(null);
       setErr(null);
+      setIncludedPubkeysArray([]);
+      setExcludedPubkeysArray([]);
+      setSendContractData(null);
     } catch (error) {
       console.error("Error switching network:", error);
     }
@@ -180,43 +151,25 @@ function App() {
               case "1":
                 setCurrentNetwork("mainnet");
                 setCurrency("ETH");
-                setContractAddress(
+                setSmartContractAddress(
                   "0x39DC6a99209B5e6B81dC8540C86Ff10981ebDA29"
                 );
                 setContractAddressURL(
-                  "https://etherscan.io/address/" + contractAddressInput
+                  "https://etherscan.io/address/" + smartContractAddress
                 );
-                break;
-              case "0x5":
-              case "5":
-                setCurrentNetwork("goerli");
-                setCurrency("goerliETH");
-                setContractAddress(
-                  "0x8e22f3F44A6b4E1DFFe22587A06E22283E7AbFB1"
-                );
-                setContractAddressURL(
-                  "https://goerli.etherscan.io/address/" + contractAddressInput
-                );
+                setPubkeyBeconchainURL("https://beaconcha.in/");
                 break;
               case "0x4268":
               case "17000":
                 setCurrentNetwork("holesky");
                 setCurrency("holeskyETH");
-                setContractAddress(
+                setSmartContractAddress(
                   "0xF78a36B46Ef0e40dc98780cEE56B1D295F68B0eF"
                 );
                 setContractAddressURL(
-                  "https://holesky.etherscan.io/address/" + contractAddressInput
+                  "https://holesky.etherscan.io/address/" + smartContractAddress
                 );
-                break;
-              case "59144":
-                setCurrentNetwork("Linea Mainnet");
-                break;
-              case "11155111":
-                setCurrentNetwork("Sepolia");
-                break;
-              case "59140":
-                setCurrentNetwork("Linea Goerli");
+                setPubkeyBeconchainURL("https://holesky.beaconcha.in/");
                 break;
               default:
                 setCurrentNetwork("Unknown Network");
@@ -240,7 +193,7 @@ function App() {
     if (account) {
       checkNetwork();
     }
-  }, [account, currentNetwork, contractAddressInput]);
+  }, [account, currentNetwork, smartContractAddress]);
 
   // if currentNetwork changes, trigger handleFileUpload processing that has already been uploaded
   useEffect(() => {
@@ -250,22 +203,22 @@ function App() {
 
   // Parse ETH smart contract ABI
   useEffect(() => {
-    if (web3 && contractAddressInput) {
+    if (web3 && smartContractAddress) {
       try {
         const contractInstance = new web3.eth.Contract(
           abi,
-          contractAddressInput
+          smartContractAddress
         );
-        setContract(contractInstance);
+        setContractABI(contractInstance);
       } catch (error) {
         console.error("Error initializing contract instance:", error);
       }
     }
-  }, [web3, contractAddressInput, currentNetwork]);
+  }, [web3, smartContractAddress, currentNetwork]);
 
   // Send and sign transaction in metamask
   const handleSendTransaction = async () => {
-    if (web3 && contract) {
+    if (web3 && contractABI) {
       let transactionParameters = {};
       try {
         isValidJSON(sendContractData);
@@ -278,12 +231,10 @@ function App() {
         let deposit_data_roots = [];
 
         for (let i in contractData) {
-          pubkeys.push(keyToHex(contractData[i]["pubkey"]));
-          withdrawals.push(keyToHex(contractData[i]["withdrawal_credentials"]));
-          signatures.push(keyToHex(contractData[i]["signature"]));
-          deposit_data_roots.push(
-            keyToHex(contractData[i]["deposit_data_root"])
-          );
+          pubkeys.push(addHex(contractData[i]["pubkey"]));
+          withdrawals.push(addHex(contractData[i]["withdrawal_credentials"]));
+          signatures.push(addHex(contractData[i]["signature"]));
+          deposit_data_roots.push(addHex(contractData[i]["deposit_data_root"]));
         }
 
         let amount = web3.utils.toWei(
@@ -293,9 +244,9 @@ function App() {
 
         transactionParameters = {
           from: account,
-          to: contractAddressInput,
+          to: smartContractAddress,
           value: amount,
-          data: contract.methods
+          data: contractABI.methods
             .batchDeposit(pubkeys, withdrawals, signatures, deposit_data_roots)
             .encodeABI(),
         };
@@ -304,7 +255,6 @@ function App() {
       }
 
       try {
-        console.log(includeArray);
         await web3.eth
           .sendTransaction(transactionParameters)
           .on("transactionHash", (transactionHash) =>
@@ -332,9 +282,6 @@ function App() {
 
       const data = JSON.parse(fileContent);
 
-      const includeIndex = [];
-      const excludeIndex = [];
-
       const accountSubstr = account.slice(-40).toUpperCase();
       for (let j in data) {
         const withdrawalSubstr = data[j].withdrawal_credentials
@@ -347,6 +294,7 @@ function App() {
               " does not match deposit_data intended network " +
               data[j].network_name
           );
+          setProcessing(null);
           return;
         } else if (withdrawalSubstr !== accountSubstr) {
           setErr(
@@ -357,74 +305,86 @@ function App() {
       }
 
       if (data && data.length < maxVal) {
-        var l = data.length;
-        for (let j in data) {
-          setErr(null);
-          try {
-            setProcessing("Parsing validator pubkeys... " + j + "/" + l);
-            var pubkey = data[j].pubkey;
-            var base_url = "";
-            if (currentNetwork === "mainnet") {
-              base_url = "https://beaconcha.in/api/v1/validator/";
-            } else if (currentNetwork === "goerli") {
-              base_url = "https://goerli.beaconcha.in/api/v1/validator/";
-            } else if (currentNetwork === "holesky") {
-              base_url = "https://holesky.beaconcha.in/api/v1/validator/";
-            }
-            const response = await axios.get(base_url + pubkey + "/deposits");
-            if (response.data.data[0]) {
-              excludeIndex.push(parseInt(j));
-            } else {
-              includeIndex.push(parseInt(j));
-            }
-          } catch (error) {
-            setErr(error);
+        setErr(null);
+        try {
+          setProcessing("Parsing validator pubkeys...");
+          var base_url = "";
+          const pks = data.map((item) => item.pubkey).join(",");
+          if (currentNetwork === "mainnet") {
+            base_url = "https://beaconcha.in/api/v1/validator/";
+          } else if (currentNetwork === "goerli") {
+            base_url = "https://goerli.beaconcha.in/api/v1/validator/";
+          } else if (currentNetwork === "holesky") {
+            base_url = "https://holesky.beaconcha.in/api/v1/validator/";
           }
+          console.log("uploaded deposit_data from file:  ", data);
+          await fetch(base_url + pks + "/deposits")
+            .then((response) => response.json())
+            .then((r) => {
+              console.log("found deposits for these pubkeys: ", r.data);
+              var saveIncludedPubkeys;
+              var tempPubkeysArray = [];
+              if (r.data.length > 0) {
+                for (let k in r.data) {
+                  tempPubkeysArray.push(r.data[k].publickey);
+                }
+                setExcludedPubkeysArray(tempPubkeysArray);
+              }
+
+              // FILTER EXCLUDED PUBKEYS TO GET PUBKEYS TO INCLUDE IN DEPOSIT_DATA
+              if (tempPubkeysArray.length > 0) {
+                const xpk = r.data.map((item) => item.publickey);
+                const filteredArray = data.filter((item) => {
+                  var p = addHex(item.pubkey);
+                  return !xpk.includes(p);
+                });
+                saveIncludedPubkeys = filteredArray.map((item) => item.pubkey);
+                setIncludedPubkeysArray(saveIncludedPubkeys);
+              } else {
+                saveIncludedPubkeys = data.map((item) => item.pubkey);
+                setIncludedPubkeysArray(saveIncludedPubkeys);
+              }
+
+              // IF NO INCLUDED PUBKEYS RETURN OUT OF FUNCTION
+              if (saveIncludedPubkeys.length === 0) {
+                setProcessing("No pubkeys included...");
+                setErr(null);
+                return;
+              } else {
+                // CHECKING INCLUDE_PUBKEYS_ARRAY AND ADDING DEPOSIT_DATA FOR SMART CONTRACT
+                var depositData = [];
+                for (let i in data) {
+                  var b = addHex(data[i].pubkey);
+                  for (let p in saveIncludedPubkeys) {
+                    var a = addHex(saveIncludedPubkeys[p]);
+
+                    if (a === b) {
+                      depositData.push(data[i]);
+                    }
+                  }
+                }
+                console.log("final deposit data included for TX:", depositData);
+                setSendContractData(JSON.stringify(depositData));
+                setProcessing(null);
+                return;
+              }
+            });
+        } catch (error) {
+          setErr(error);
         }
       } else {
         setErr(
           "No data or trying to max number of validators (max: " + maxVal + ")"
         );
       }
-
-      const excludeArray = [];
-      for (let j in excludeIndex) {
-        const index = excludeIndex[j];
-        excludeArray.push(data[index].pubkey);
-      }
-      setExludeArray(excludeArray);
-      if (excludeArray.length === 0) {
-        setExludeArray(null);
-      }
-
-      const includeArray = [];
-      const arr = [];
-
-      for (let j in includeIndex) {
-        const index = includeIndex[j];
-        includeArray.push(data[index].pubkey);
-        if (data[index].network_name === currentNetwork) {
-          arr.push(data[index]);
-        }
-      }
-      setIncludeArray(includeArray);
-
-      if (arr.length === 0 && excludeArray !== 0) {
-        setProcessing("No pubkeys included...");
-        setErr(null);
-        return;
-      }
-
-      if (includeArray.length === 0) {
-        setIncludeArray(null);
-      }
-
-      setSendContractData(JSON.stringify(arr));
-      setProcessing(null);
     };
 
     fetchData();
   }, [fileContent, currentNetwork, account]);
+
+  const handleAgree = () => {
+    setTermsAgreed(true);
+  };
 
   // App UI
   return (
@@ -578,7 +538,18 @@ function App() {
                         </div>
                         <div className="col-span-11">
                           <p className="text-lg">
-                            {account ? account : "...please connect Metamask"}
+                            {account ? (
+                              <a
+                                target="blank"
+                                href={
+                                  pubkeyBeconchainURL + "address/" + account
+                                }
+                              >
+                                {account}
+                              </a>
+                            ) : (
+                              "...please connect Metamask"
+                            )}
                           </p>
                         </div>
                         <div className="col-span-1"></div>
@@ -631,7 +602,7 @@ function App() {
                         <div className="col-span-11">
                           <a href={contractAddressURL} target="blank">
                             <p className="text-lg">
-                              {account ? <>{contractAddressInput}</> : "..."}
+                              {account ? <>{smartContractAddress}</> : "..."}
                             </p>
                           </a>
                         </div>
@@ -706,7 +677,7 @@ function App() {
                               id="file"
                               className="file-upload text-center pt-6"
                             />
-                            <p>{processing}</p>
+                            <p className="text-sm pt-2">{processing}</p>
                           </div>
                         </div>
                       </div>
@@ -727,7 +698,7 @@ function App() {
                           src={Sign}
                           className="img-center sign-ico"
                         ></img>
-                        {sendContractData && account ? (
+                        {sendContractData && account && currentNetwork ? (
                           <div>
                             <button
                               onClick={handleSendTransaction}
@@ -740,11 +711,12 @@ function App() {
                               <div></div>
                               {transactionResponse ? (
                                 <div>
-                                  <p>TX Response:</p>
-                                  <p>{transactionResponse}</p>
+                                  <p className="text-sm">
+                                    Success!...see details below.
+                                  </p>
                                 </div>
                               ) : (
-                                <div></div>
+                                <></>
                               )}
                             </div>
                           </div>
@@ -796,12 +768,12 @@ function App() {
                     </div>
                     <div className="col-span-2 br pr-5 mr-5 text-right">
                       <p>
-                        {includeArray ? (
-                          <p>
-                            {includeArray.length * 32} {currency}
-                          </p>
+                        {includedPubkeysArray ? (
+                          <div>
+                            {includedPubkeysArray.length * 32} {currency}
+                          </div>
                         ) : (
-                          <p>0 {currency}</p>
+                          <div>0 {currency}</div>
                         )}{" "}
                       </p>
                       <p className="text-gr text-upper text-2xs mt-1">
@@ -810,7 +782,11 @@ function App() {
                     </div>
                     <div className="col-span-2 br pr-5 mr-5 text-right">
                       <p className="text-lg">
-                        {includeArray ? <p>{includeArray.length}</p> : 0}
+                        {includedPubkeysArray ? (
+                          <div>{includedPubkeysArray.length}</div>
+                        ) : (
+                          0
+                        )}
                       </p>
                       <p className="text-gr text-upper text-2xs mt-1">
                         validator count
@@ -818,7 +794,11 @@ function App() {
                     </div>
                     <div className="col-span-2 pr-5 text-right">
                       <p className="text-lg">
-                        {excludeArray ? <p>{excludeArray.length}</p> : 0}
+                        {excludedPubkeysArray ? (
+                          <div>{excludedPubkeysArray.length}</div>
+                        ) : (
+                          0
+                        )}
                       </p>
                       <p className="text-gr text-upper text-2xs mt-1">
                         excluded pubkey count
@@ -828,18 +808,38 @@ function App() {
                 </div>
               </div>
               <div className="col-span-1 bg-faded">
-                {includeArray && !err && !processing ? (
+                {includedPubkeysArray && !err && !processing ? (
                   <div>
                     <div className="grid grid-cols-1 p-4">
-                      <Pubkeys pubkeys={includeArray} exlcuded={excludeArray} />
+                      {transactionResponse ? (
+                        <Pubkeys
+                          pubkeys={includedPubkeysArray}
+                          excluded={excludedPubkeysArray}
+                          pubkeyURL={pubkeyBeconchainURL}
+                          txResponse={transactionResponse}
+                        />
+                      ) : (
+                        <Pubkeys
+                          pubkeys={includedPubkeysArray}
+                          excluded={excludedPubkeysArray}
+                          pubkeyURL={pubkeyBeconchainURL}
+                        />
+                      )}
                     </div>
                   </div>
                 ) : (
                   <div>
                     {processing ? (
-                      <p className=" text-white p-6 font-lg">
-                        <i>{processing}</i>
-                      </p>
+                      <div>
+                        <p className=" text-white p-6 font-lg">
+                          <i>{processing}</i>
+                        </p>
+                        <Pubkeys
+                          pubkeys={includedPubkeysArray}
+                          excluded={excludedPubkeysArray}
+                          pubkeyURL={pubkeyBeconchainURL}
+                        />
+                      </div>
                     ) : (
                       <></>
                     )}

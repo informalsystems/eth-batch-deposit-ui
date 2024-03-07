@@ -1,6 +1,6 @@
 // src/components/TermsAndConditions.js
 import React, { useState } from "react";
-import Logo from "../assets/Informal_Mark.png";
+import Logo from "../assets/images/Informal_Mark.png";
 
 const TermsAndConditions = ({ onAgree }) => {
   const [isChecked, setChecked] = useState(false);
