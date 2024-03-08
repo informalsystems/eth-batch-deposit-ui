@@ -27,6 +27,8 @@ const TermsAndConditions = ({ onAgree }) => {
         <p>
           This is for authorized testing purposes only, do not use this website!
           <br></br>
+          Formatted for desktop use only...
+          <br></br>
           <br></br>
           Your use of the services and deposit(s) anticipated by this agreement
           will require that you scrupulously follow certain instructions (the

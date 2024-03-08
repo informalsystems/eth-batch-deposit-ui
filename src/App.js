@@ -18,9 +18,9 @@ import Alert from "./assets/icons/Alert.png";
 console.clear();
 
 function App() {
-  const [account, setAccount] = useState("");
-  const [balance, setBalance] = useState("");
-  const [currency, setCurrency] = useState("");
+  const [account, setAccount] = useState(null);
+  const [balance, setBalance] = useState(null);
+  const [currency, setCurrency] = useState(null);
   const [web3, setWeb3] = useState(null);
   const [contractABI, setContractABI] = useState(null);
   const [currentNetwork, setCurrentNetwork] = useState(null);
@@ -30,7 +30,7 @@ function App() {
   const [excludedPubkeysArray, setExcludedPubkeysArray] = useState([]);
   const [includedPubkeysArray, setIncludedPubkeysArray] = useState([]);
   const [processing, setProcessing] = useState("");
-  const [smartContractAddress, setSmartContractAddress] = useState("");
+  const [smartContractAddress, setSmartContractAddress] = useState(null);
   const [contractAddressURL, setContractAddressURL] = useState("");
   const [pubkeyBeconchainURL, setPubkeyBeconchainURL] = useState("");
   const [err, setErr] = useState("");
@@ -128,7 +128,15 @@ function App() {
       setExcludedPubkeysArray([]);
       setSendContractData(null);
     } catch (error) {
-      console.error("Error switching network:", error);
+      console.error("Error switching network:", error.message);
+      const str = error.message;
+      if (str.includes("Unrecognized chain ID")) {
+        var ch;
+        if (networkIdNum === "4268") {
+          ch = "Holesky";
+        }
+        setErr(ch + " network not setup in wallet...");
+      }
     }
   };
 
@@ -297,6 +305,7 @@ function App() {
           setProcessing(null);
           return;
         } else if (withdrawalSubstr !== accountSubstr) {
+          setProcessing(null);
           setErr(
             "withdrawal_credentials in deposit data does not match current metamask account"
           );
@@ -397,19 +406,21 @@ function App() {
             <div className="flex justify-center">
               <div className="menu-bar grid grid-cols-12 gap-4">
                 <div className="col-span-3">
-                  <a
-                    target="_blank"
-                    rel="noreferrer"
-                    href="https://informal.systems"
-                  >
+                  <a target="blank" href="https://informal.systems">
                     <img src={Logo} alt="Logo" className="logo w-16" />
                   </a>
                 </div>
                 <div className="col-span-7">
                   <div className="menu-links text-sm tracking-wider">
-                    <a href="https://informal.systems">informal systems</a>
-                    <a href="https://informal.systems">rewards dashboard</a>
-                    <a href="https://informal.systems">stake with us</a>
+                    <a target="blank" href="https://informal.systems">
+                      informal systems
+                    </a>
+                    <a target="blank" href="https://informal.systems">
+                      rewards dashboard
+                    </a>
+                    <a target="blank" href="https://informal.systems">
+                      stake with us
+                    </a>
                     <a href="https://informal.systems">batch deposit</a>
                   </div>
                 </div>
@@ -485,7 +496,7 @@ function App() {
             </div>
           </div>
 
-          <div className="flex justify-center">
+          <div className="flex justify-center pl-2 pr-2">
             <div className="main mt-6">
               <div className="grid grid-cols-12 gap-5">
                 {/*  NETWORK DETAILS  */}
@@ -537,7 +548,7 @@ function App() {
                           ></img>
                         </div>
                         <div className="col-span-11">
-                          <p className="text-lg">
+                          <div className="text-lg wrap-char">
                             {account ? (
                               <a
                                 target="blank"
@@ -550,7 +561,7 @@ function App() {
                             ) : (
                               "...please connect Metamask"
                             )}
-                          </p>
+                          </div>
                         </div>
                         <div className="col-span-1"></div>
                         <div className="col-span-11 text-gray text-xs mt-1">
@@ -571,15 +582,15 @@ function App() {
                           ></img>
                         </div>
                         <div className="col-span-11">
-                          <p className="text-lg">
+                          <div className="text-lg">
                             {account ? (
-                              <>
+                              <p>
                                 {balance} {currency}
-                              </>
+                              </p>
                             ) : (
                               "..."
                             )}
-                          </p>
+                          </div>
                         </div>
                         <div className="col-span-1"></div>
                         <div className="col-span-11 text-gray text-xs mt-1">
@@ -601,9 +612,13 @@ function App() {
                         </div>
                         <div className="col-span-11">
                           <a href={contractAddressURL} target="blank">
-                            <p className="text-lg">
-                              {account ? <>{smartContractAddress}</> : "..."}
-                            </p>
+                            <div className="text-lg wrap-char">
+                              {account ? (
+                                <p>{smartContractAddress}</p>
+                              ) : (
+                                <p>...</p>
+                              )}
+                            </div>
                           </a>
                         </div>
                         <div className="col-span-1"></div>
@@ -625,15 +640,15 @@ function App() {
                           ></img>
                         </div>
                         <div className="col-span-11">
-                          <p className="text-lg">
+                          <div className="text-lg">
                             {account ? (
-                              <>
+                              <p>
                                 {maxVal * 32} {currency}
-                              </>
+                              </p>
                             ) : (
-                              "..."
+                              <p>...</p>
                             )}
-                          </p>
+                          </div>
                         </div>
                         <div className="col-span-1"></div>
                         <div className="col-span-11 text-gray text-xs mt-1">
@@ -666,17 +681,22 @@ function App() {
                               alt=""
                               className="upload-ico img-center"
                             ></img>
-                            <p className="pt-6 text-lg">
+                            <p className="pt-6 pb-6 text-lg">
                               Upload your deposit_data.json file to proceed
                             </p>
+                            <label className="label" for="file">
+                              Browse Files...
+                            </label>
                             <input
                               type="file"
                               accept=".json"
                               onChange={handleFileUpload}
                               ref={fileInputRef}
                               id="file"
-                              className="file-upload text-center pt-6"
                             />
+                            <p className="text-2xs pt-2">
+                              {fileContent ? "deposit_data file loaded" : ""}
+                            </p>
                             <p className="text-sm pt-2">{processing}</p>
                           </div>
                         </div>
@@ -708,13 +728,10 @@ function App() {
                             </button>
 
                             <div>
-                              <div></div>
                               {transactionResponse ? (
-                                <div>
-                                  <p className="text-sm">
-                                    Success!...see details below.
-                                  </p>
-                                </div>
+                                <p className="text-sm">
+                                  Success!...see details below.
+                                </p>
                               ) : (
                                 <></>
                               )}
@@ -733,7 +750,7 @@ function App() {
                       {err ? (
                         <div>
                           {err ? (
-                            <div className="error error-block">
+                            <div className="error">
                               <img
                                 alt=""
                                 src={Alert}
@@ -756,7 +773,7 @@ function App() {
           </div>
 
           {/*    FULL TRANSACTION DETAILS TABLE    */}
-          <div className="flex justify-center pt-5">
+          <div className="flex justify-center pt-5 pl-2 pr-2">
             <div className="grid grid-cols-1 pubkeys bg-white">
               <div className="col-span-1">
                 <div className="card-header bg text-white radius-top">
@@ -767,15 +784,15 @@ function App() {
                       </p>
                     </div>
                     <div className="col-span-2 br pr-5 mr-5 text-right">
-                      <p>
+                      <div>
                         {includedPubkeysArray ? (
-                          <div>
+                          <p>
                             {includedPubkeysArray.length * 32} {currency}
-                          </div>
+                          </p>
                         ) : (
-                          <div>0 {currency}</div>
+                          <p>0 {currency}</p>
                         )}{" "}
-                      </p>
+                      </div>
                       <p className="text-gr text-upper text-2xs mt-1">
                         total {currency} to be staked
                       </p>
@@ -793,13 +810,13 @@ function App() {
                       </p>
                     </div>
                     <div className="col-span-2 pr-5 text-right">
-                      <p className="text-lg">
+                      <div className="text-lg">
                         {excludedPubkeysArray ? (
-                          <div>{excludedPubkeysArray.length}</div>
+                          <p>{excludedPubkeysArray.length}</p>
                         ) : (
                           0
                         )}
-                      </p>
+                      </div>
                       <p className="text-gr text-upper text-2xs mt-1">
                         excluded pubkey count
                       </p>

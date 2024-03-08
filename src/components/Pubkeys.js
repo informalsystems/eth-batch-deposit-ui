@@ -6,16 +6,17 @@ const Pubkeys = (props) => {
     <div className="pubkeys">
       {props.txResponse ? (
         <div className="keys">
-          <div className="font-lg text-white font-bold text-upper p-2 ">
-            Transaction was successful!{" "}
-            <i>
-              ...view your validator deposits below or visit our rewards
-              dashboard
-            </i>
+          <div className="title-font text-xl text-white font-bold text-upper p-2 ">
+            Transaction was successful!
           </div>
-          <div className="hash">
-            <a target="blank" href={props.pubkeyURL + "tx/" + props.txResponse}>
+          <div className="hash p-6">
+            <a
+              className="text-white text-lg char-wrap"
+              target="blank"
+              href={props.pubkeyURL + "tx/" + props.txResponse}
+            >
               Transaction Hash: <b>{props.txResponse}</b>
+              <i className="text-xs"> click hash to view on beaconcha.in</i>
             </a>
           </div>
           {props.pubkeys.map((pubkey, index) => (
@@ -49,14 +50,14 @@ const Pubkeys = (props) => {
         </div>
       ) : (
         <div className="keys">
-          {props.pubkeys ? (
+          {props.pubkeys.length > 0 ? (
             <div className="font-lg text-white font-bold text-upper p-2 ">
               Validator Pubkeys
             </div>
           ) : (
             <></>
           )}
-          {props.pubkeys ? (
+          {props.pubkeys.length > 0 ? (
             props.pubkeys.map((pubkey, index) => (
               <div className="p-2 pl-6 text-white" key={index}>
                 {pubkey}
