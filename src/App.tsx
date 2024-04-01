@@ -13,10 +13,7 @@ function App() {
   const [state, dispatch] = useReducerWithPersistedStateKeys({
     initialState,
     localStorageKeyName: "saved-state",
-    persistedKeys: [
-      //"account",
-      "isTermsAgreed",
-    ],
+    persistedKeys: ["account", "isTermsAgreed"],
     reducer: AppReducer,
   })
 

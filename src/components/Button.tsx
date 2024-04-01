@@ -14,31 +14,6 @@ interface ButtonProps extends ComponentProps<"button"> {
   variant?: keyof typeof classNamesByVariant
 }
 
-const classNamesBySize = {
-  default: {
-    container: `
-      px-6
-      py-3
-    `,
-    icon: `
-      py-3
-      px-4
-    `,
-  },
-
-  small: {
-    container: `
-      px-3
-      py-1
-      text-sm
-    `,
-    icon: `
-      py-1
-      px-2
-    `,
-  },
-}
-
 const classNamesForAllVariants = `
   flex
   w-fit
@@ -49,6 +24,7 @@ const classNamesForAllVariants = `
   disabled:pointer-events-none
   disabled:cursor-not-allowed
   disabled:opacity-30
+  whitespace-nowrap
 `
 
 const classNamesForIconContainers = `
@@ -56,6 +32,31 @@ const classNamesForIconContainers = `
   items-center
   justify-center
 `
+
+const classNamesBySize = {
+  default: {
+    label: `
+      px-6
+      py-3
+    `,
+    icon: `
+      py-3
+      px-4
+    `,
+  },
+
+  small: {
+    label: `
+      px-3
+      py-1
+      text-sm
+    `,
+    icon: `
+      py-1
+      px-2
+    `,
+  },
+}
 
 const classNamesByVariant = {
   default: {
@@ -93,9 +94,11 @@ const classNamesByVariant = {
   },
 
   unstyled: {
-    container: "",
-    icon: `
+    container: `
+      gap-1
+      dark:text-white
     `,
+    icon: ``,
   },
 }
 
@@ -114,6 +117,12 @@ export const Button = ({
   ...otherProps
 }: ButtonProps) => {
   const isUsingActiveState = typeof isActive === "boolean"
+
+  const classNamesForIconAtSize =
+    variant !== "unstyled" ? classNamesBySize[size].icon : ``
+
+  const classNamesForLabelAtSize =
+    variant !== "unstyled" ? classNamesBySize[size].label : ``
 
   return (
     <button
@@ -140,7 +149,7 @@ export const Button = ({
           className={twJoin(
             classNamesForIconContainers,
             classNamesByVariant[variant].icon,
-            classNamesBySize[size].icon,
+            classNamesForIconAtSize,
           )}
         >
           <Icon
@@ -150,14 +159,14 @@ export const Button = ({
         </div>
       )}
 
-      <div className={classNamesBySize[size].container}>{children}</div>
+      <div className={classNamesForLabelAtSize}>{children}</div>
 
       {iconRightName && (
         <div
           className={twJoin(
             classNamesForIconContainers,
             classNamesByVariant[variant].icon,
-            classNamesBySize[size].icon,
+            classNamesForIconAtSize,
           )}
         >
           <Icon

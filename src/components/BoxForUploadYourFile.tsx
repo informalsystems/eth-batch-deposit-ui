@@ -34,7 +34,7 @@ export const BoxForUploadYourFile = () => {
     const validationErrors: string[] = []
 
     if (!(file.size < 1024 * 1024)) {
-      validationErrors.push("File is too large")
+      validationErrors.push("File exceeds 1MB limit")
     }
 
     if (file.type !== "application/json") {
@@ -121,9 +121,15 @@ export const BoxForUploadYourFile = () => {
       dispatch({
         type: "setState",
         payload: {
-          confirmationMessage: "File loaded and passed validation",
-          errorMessages: [],
           validatedDesposits: parsedJSONObjects,
+        },
+      })
+
+      dispatch({
+        type: "showMessage",
+        payload: {
+          type: "confirmation",
+          message: "File loaded and passed validation",
         },
       })
     }
@@ -200,22 +206,23 @@ export const BoxForUploadYourFile = () => {
 
         <StyledText variant="accentuated">
           {hasSelectedFile ? (
-            <>
-              <span>File Loaded</span>
-              <Button
-                className="text-xs"
-                variant="unstyled"
-              >
-                <Icon name="folder-magnifying-glass" />
-                <span>Select Another...</span>
-              </Button>
-            </>
+            <span>File Loaded</span>
           ) : (
             <span>
               Upload your <code>deposit_data.json</code> file to&nbsp;proceed
             </span>
           )}
         </StyledText>
+
+        {hasSelectedFile && (
+          <Button
+            className="text-xs"
+            iconLeftName="folder-magnifying-glass"
+            variant="unstyled"
+          >
+            Select Another...
+          </Button>
+        )}
 
         <input
           className="

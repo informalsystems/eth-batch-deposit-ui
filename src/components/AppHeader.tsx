@@ -1,8 +1,13 @@
+import { useEffect } from "react"
+import { Web3 } from "web3"
 import { useAppContext } from "../context"
 import { Button } from "./Button"
 import { FormattedAddress } from "./FormattedAddress"
 import { SectionContainer } from "./SectionContainer"
 import { StyledText } from "./StyledText"
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ethereum = (window as any).ethereum
 
 export const AppHeader = () => {
   const {
@@ -11,39 +16,59 @@ export const AppHeader = () => {
   } = useAppContext()
 
   const handleClickConnectWallet = async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const ethereum = (window as any).ethereum
-
-    //check metamask is installed
-    if (ethereum) {
-      // Get permission to call eth_accounts
-      await ethereum.request({
-        method: "eth_requestAccounts",
+    if (!ethereum) {
+      dispatch({
+        type: "showMessage",
+        payload: {
+          type: "error",
+          message: "Please download metamask",
+        },
       })
+    }
 
-      const accounts = await ethereum.request({
-        method: "eth_accounts",
-      })
+    // Get permission to call eth_accounts
+    await ethereum.request({
+      method: "eth_requestAccounts",
+    })
 
-      const firstAccountAddress = accounts[0]
+    const accounts = await ethereum.request({
+      method: "eth_accounts",
+    })
 
-      const balance = await ethereum.request({
-        method: "eth_getBalance",
-        params: [firstAccountAddress],
-      })
+    const firstAccountAddress = accounts[0]
 
-      //show the first connected account in the react page
+    dispatch({
+      type: "setState",
+      payload: {
+        account: firstAccountAddress,
+      },
+    })
+  }
+
+  useEffect(() => {
+    if (!account) {
+      return
+    }
+
+    const getAccountDetails = async () => {
+      const web3 = new Web3(ethereum)
+
+      const balanceInWei = await web3.eth.getBalance(account)
+
+      const balanceInEther = web3.utils.fromWei(balanceInWei, "ether")
+
+      const humanReadableBalance = parseFloat(balanceInEther).toFixed(2)
+
       dispatch({
         type: "setState",
         payload: {
-          account: firstAccountAddress,
-          balance,
+          balance: humanReadableBalance,
         },
       })
-    } else {
-      alert("Please download metamask")
     }
-  }
+
+    getAccountDetails()
+  }, [account, dispatch])
 
   return (
     <header

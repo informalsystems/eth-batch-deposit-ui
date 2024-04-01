@@ -1,10 +1,20 @@
 import { Dispatch } from "react"
+import Contract from "web3-eth-contract"
+import abi from "./abi.json"
 import { constants } from "./constants"
 
-export type AppAction = {
-  type: "setState"
-  payload: Partial<AppState>
-}
+export type AppAction =
+  | {
+      type: "setState"
+      payload: Partial<AppState>
+    }
+  | {
+      type: "showMessage"
+      payload: {
+        type: "error" | "confirmation"
+        message: string
+      }
+    }
 
 export interface AppContextObject {
   dispatch: Dispatch<AppAction>
@@ -14,9 +24,9 @@ export interface AppContextObject {
 export interface AppState {
   account: string | null
   balance: string | null
-  confirmationMessage: string
+  confirmationMessages: string[]
   connectedNetworkId: SupportedNetworkId | null
-  contractABI: string | null
+  contractABI: Contract<typeof abi> | null
   errorMessages: string[]
   isTermsAgreed: boolean
   processing: string | null

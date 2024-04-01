@@ -1,4 +1,6 @@
 import { MouseEvent, useEffect } from "react"
+import { Web3 } from "web3"
+import abi from "../abi.json"
 import { constants } from "../constants"
 import { useAppContext } from "../context"
 import { SupportedNetworkId } from "../types"
@@ -8,6 +10,9 @@ import { Icon } from "./Icon"
 import { LabeledBox } from "./LabeledBox"
 import { StyledText } from "./StyledText"
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ethereum = (window as any).ethereum
+
 export const BoxForNetworkDetails = () => {
   const {
     dispatch,
@@ -16,18 +21,35 @@ export const BoxForNetworkDetails = () => {
 
   const isFullyConnected = !!account && !!connectedNetworkId
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const ethereum = (window as any).ethereum
+  const connectedNetwork = isFullyConnected
+    ? constants.networksById[connectedNetworkId]
+    : null
 
-  // Fetch the
   useEffect(() => {
-    const setConnectedNetworkId = (networkId: SupportedNetworkId) => {
-      dispatch({
-        type: "setState",
-        payload: {
-          connectedNetworkId: networkId,
-        },
-      })
+    const handleChainChanged = (networkId: SupportedNetworkId) => {
+      const web3 = new Web3(ethereum)
+
+      const { smartContractAddress } = constants.networksById[networkId]
+
+      try {
+        const contractABI = new web3.eth.Contract(abi, smartContractAddress)
+
+        dispatch({
+          type: "setState",
+          payload: {
+            connectedNetworkId: networkId,
+            contractABI,
+          },
+        })
+      } catch (error) {
+        dispatch({
+          type: "showMessage",
+          payload: {
+            type: "error",
+            message: `Error initializing contract instance: ${error}`,
+          },
+        })
+      }
     }
 
     const queryChainId = async () => {
@@ -35,13 +57,13 @@ export const BoxForNetworkDetails = () => {
         method: "eth_chainId",
       })
 
-      setConnectedNetworkId(networkId)
+      handleChainChanged(networkId)
     }
 
     queryChainId()
 
-    ethereum.on("chainChanged", setConnectedNetworkId)
-  }, [dispatch, ethereum])
+    ethereum.on("chainChanged", handleChainChanged)
+  }, [dispatch])
 
   const handleClickSelectNetwork = async (
     { networkId }: { networkId: string },
@@ -49,10 +71,20 @@ export const BoxForNetworkDetails = () => {
   ) => {
     event.preventDefault()
 
-    await ethereum.request({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId: networkId }],
-    })
+    try {
+      await ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: networkId }],
+      })
+    } catch (error) {
+      dispatch({
+        type: "showMessage",
+        payload: {
+          message: String(error) ?? "Unknown error",
+          type: "error",
+        },
+      })
+    }
   }
 
   return (
@@ -107,7 +139,7 @@ export const BoxForNetworkDetails = () => {
         </div>
       )}
     >
-      {!isFullyConnected && (
+      {!connectedNetwork && (
         <div
           className="
             flex
@@ -121,29 +153,44 @@ export const BoxForNetworkDetails = () => {
         </div>
       )}
       {isFullyConnected &&
+        connectedNetwork &&
         (
           [
             {
               icon: "id-card-clip",
               label: "Connected Account",
-              value: <FormattedAddress address={account} />,
+              value: (
+                <a
+                  href={`${connectedNetwork.pubkeyBeaconchainURL}/address/${account}`}
+                  target="_blank"
+                >
+                  <FormattedAddress address={account} />
+                </a>
+              ),
             },
             {
               icon: "wallet",
               label: "Wallet Balance",
-              value: `${balance} ${constants.networksById[connectedNetworkId].currency}`,
+              value: `${balance} ${connectedNetwork.currency}`,
             },
             {
               icon: "file-contract",
               label: "Deposit Contract",
               value: (
-                <FormattedAddress address="0xF78a36B46Ef0e40dc98780cEE56B1D295F68B0eF" />
+                <a
+                  href={connectedNetwork.smartContractURL}
+                  target="blank"
+                >
+                  <FormattedAddress
+                    address={connectedNetwork.smartContractAddress}
+                  />
+                </a>
               ),
             },
             {
               icon: "arrow-up-to-line",
               label: "Max Amount Per Tx",
-              value: "1,600 holeskyETH",
+              value: `${(constants.maximumValue * 32).toLocaleString()} ${connectedNetwork.currency}`,
             },
           ] as const
         ).map(({ icon, label, value }) => (
