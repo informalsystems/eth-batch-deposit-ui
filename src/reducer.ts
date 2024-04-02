@@ -8,15 +8,11 @@ const initialState: AppState = {
   contractABI: null,
   errorMessages: [],
   isTermsAgreed: false,
-  processing: null,
-  pubkeys: {
-    excluded: [],
-    included: [],
-  },
+  isLoading: false,
   sendContractData: null,
   transactionResponse: null,
   uploadedFileContents: null,
-  validatedDesposits: [],
+  validatedDeposits: [],
   web3: null,
 }
 

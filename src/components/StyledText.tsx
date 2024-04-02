@@ -46,7 +46,8 @@ const classNamesByVariant = {
     text-fadedTextColor
   `,
   link: `
-    text-fadedTextColor
+    text-accentColor
+    underline
   `,
 }
 

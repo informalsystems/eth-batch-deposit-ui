@@ -160,12 +160,19 @@ export const BoxForNetworkDetails = () => {
               icon: "id-card-clip",
               label: "Connected Account",
               value: (
-                <a
+                <StyledText
+                  as="a"
                   href={`${connectedNetwork.pubkeyBeaconchainURL}/address/${account}`}
                   target="_blank"
+                  variant="link"
                 >
                   <FormattedAddress address={account} />
-                </a>
+                  &zwj;
+                  <Icon
+                    className="ml-1"
+                    name="square-up-right"
+                  />
+                </StyledText>
               ),
             },
             {
@@ -177,14 +184,21 @@ export const BoxForNetworkDetails = () => {
               icon: "file-contract",
               label: "Deposit Contract",
               value: (
-                <a
+                <StyledText
+                  as="a"
                   href={connectedNetwork.smartContractURL}
-                  target="blank"
+                  target="_blank"
+                  variant="link"
                 >
                   <FormattedAddress
                     address={connectedNetwork.smartContractAddress}
                   />
-                </a>
+                  &zwj;
+                  <Icon
+                    className="ml-1"
+                    name="square-up-right"
+                  />
+                </StyledText>
               ),
             },
             {

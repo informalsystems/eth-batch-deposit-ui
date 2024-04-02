@@ -29,15 +29,11 @@ export interface AppState {
   contractABI: Contract<typeof abi> | null
   errorMessages: string[]
   isTermsAgreed: boolean
-  processing: string | null
-  pubkeys: {
-    excluded: string[]
-    included: string[]
-  }
+  isLoading: boolean
   sendContractData: string | null
   transactionResponse: string | null
   uploadedFileContents: string | null
-  validatedDesposits: DepositObject[]
+  validatedDeposits: DepositObject[]
   web3: string | null
 }
 
@@ -48,6 +44,8 @@ export type DepositObject = {
   [K in RequiredDepositKeys]: string | number
 } & {
   [K in OptionalDepositKeys]?: string | number
+} & {
+  validationErrors?: string[]
 }
 
 export type SupportedNetworkId = keyof typeof constants.networksById

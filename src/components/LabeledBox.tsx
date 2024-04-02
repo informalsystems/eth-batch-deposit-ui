@@ -29,13 +29,16 @@ export const LabeledBox = ({
   return (
     <div
       className="
-      flex
-      h-full
-      flex-col
-      justify-stretch
-      overflow-hidden
-      rounded-md
-    "
+        flex
+        h-full
+        flex-col
+        justify-stretch
+        overflow-hidden
+        rounded-md
+        transition-opacity
+        [&[aria-disabled]]:pointer-events-none
+        [&[aria-disabled]]:opacity-50
+      "
       {...otherProps}
     >
       <div

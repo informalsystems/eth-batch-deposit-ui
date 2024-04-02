@@ -3,6 +3,8 @@ import { ChangeEvent, useState } from "react"
 import { twMerge } from "tailwind-merge"
 import { constants } from "../constants"
 import { useAppContext } from "../context"
+import { formatHex } from "../helpers/formatHex"
+import { DepositObject } from "../types"
 import { Button } from "./Button"
 import { Icon } from "./Icon"
 import { LabeledBox } from "./LabeledBox"
@@ -15,121 +17,165 @@ const allRecognizedKeys = [...optionalJSONKeys, ...requiredJSONKeys]
 export const BoxForUploadYourFile = () => {
   const {
     dispatch,
-    state: { validatedDesposits },
+    state: { account, connectedNetworkId, validatedDeposits },
   } = useAppContext()
 
   const [isDraggingOverTarget, setIsDraggingOverTarget] = useState(false)
 
-  const hasSelectedFile = validatedDesposits.length >= 1
+  const hasSelectedFile = validatedDeposits.length >= 1
+
+  const showErrorMessage = (message: string) =>
+    dispatch({
+      type: "showMessage",
+      payload: {
+        type: "error",
+        message,
+      },
+    })
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setIsDraggingOverTarget(false)
 
     const file = event.target.files?.[0]
 
-    if (!file) {
+    if (!file || !account || !connectedNetworkId) {
       return
     }
 
-    const validationErrors: string[] = []
+    const accountSubstr = account.slice(-40).toUpperCase()
+
+    const connectedNetwork = constants.networksById[connectedNetworkId]
 
     if (!(file.size < 1024 * 1024)) {
-      validationErrors.push("File exceeds 1MB limit")
+      showErrorMessage("File exceeds 1MB limit")
+      return
     }
 
     if (file.type !== "application/json") {
-      validationErrors.push("File is not of type application/json")
-    }
-
-    if (validationErrors.length >= 1) {
-      dispatch({
-        type: "setState",
-        payload: {
-          errorMessages: validationErrors,
-        },
-      })
+      showErrorMessage("File is not of type application/json")
       return
     }
 
     const reader = new FileReader()
 
-    reader.onload = (event) => {
-      const rawJSON = String(event.target?.result)
-      const parsedJSONObjects = JSON.parse(rawJSON)
+    reader.onload = async (event) => {
+      const rawJSON = String(event.target?.result ?? "[]")
+      const uploadedDeposits = JSON.parse(rawJSON) as DepositObject[]
 
-      if (!Array.isArray(parsedJSONObjects)) {
-        validationErrors.push("File is not an array of objects")
-      } else {
-        const objectValidationErrors = parsedJSONObjects.reduce<string[]>(
-          (accumulatedErrorMessages, currentObject, index) => {
-            if (typeof currentObject !== "object") {
-              return [
-                ...accumulatedErrorMessages,
-                `Value of index ${index} is not an object`,
-              ]
-            }
-
-            const differingPropertyNames = xor(
-              allRecognizedKeys,
-              Object.keys(currentObject),
-            )
-
-            // No unrecognized properties means valid
-            if (differingPropertyNames.length === 0) {
-              return accumulatedErrorMessages
-            }
-
-            return differingPropertyNames.reduce(
-              (propertyErrorMessages, propertyName) => {
-                if (
-                  (requiredJSONKeys as Readonly<string[]>).includes(
-                    propertyName,
-                  )
-                ) {
-                  propertyErrorMessages.push(
-                    `Object at index ${index} is missing required property "${propertyName}"`,
-                  )
-                }
-
-                if (!(allRecognizedKeys as string[]).includes(propertyName)) {
-                  propertyErrorMessages.push(
-                    `Object at index ${index} has unrecognized property "${propertyName}"`,
-                  )
-                }
-
-                return propertyErrorMessages
-              },
-              accumulatedErrorMessages,
-            )
-          },
-          [],
-        )
-
-        validationErrors.push(...objectValidationErrors)
-      }
-
-      if (validationErrors.length >= 1) {
-        dispatch({
-          type: "setState",
-          payload: {
-            errorMessages: validationErrors,
-          },
-        })
+      if (!Array.isArray(uploadedDeposits)) {
+        showErrorMessage("File is not an array of objects")
         return
       }
+
+      if (uploadedDeposits.length >= constants.maximumValue) {
+        showErrorMessage(
+          `Number of objects in uploade file exceeds limit of ${constants.maximumValue}`,
+        )
+        return
+      }
+
+      const uploadedDepositsWithValidationErrors = uploadedDeposits.map(
+        (uploadedDeposit) => {
+          const validationErrors: string[] = []
+
+          const withdrawalSubstr = String(
+            uploadedDeposit.withdrawal_credentials,
+          )
+            .slice(-40)
+            .toUpperCase()
+
+          if (typeof uploadedDeposit !== "object") {
+            validationErrors.push(`Not an object`)
+          }
+
+          if (
+            String(uploadedDeposit.network_name).toLowerCase() !==
+            connectedNetwork.label.toLowerCase()
+          ) {
+            validationErrors.push(
+              `Network "${uploadedDeposit.network_name}" does not match connected network "${connectedNetwork.label}"`,
+            )
+          }
+
+          if (withdrawalSubstr !== accountSubstr) {
+            validationErrors.push(
+              `withdrawal_credentials does not match current metamask account`,
+            )
+          }
+
+          const differingPropertyNames = xor(
+            allRecognizedKeys,
+            Object.keys(uploadedDeposit),
+          )
+
+          differingPropertyNames.forEach((propertyName) => {
+            if (
+              (requiredJSONKeys as Readonly<string[]>).includes(propertyName)
+            ) {
+              validationErrors.push(
+                `Object is missing required property "${propertyName}"`,
+              )
+            }
+
+            if (!(allRecognizedKeys as string[]).includes(propertyName)) {
+              validationErrors.push(
+                `Object has unrecognized property "${propertyName}"`,
+              )
+            }
+          })
+
+          return {
+            ...uploadedDeposit,
+            validationErrors,
+          }
+        },
+      )
+
+      const validDeposits = uploadedDepositsWithValidationErrors.filter(
+        (deposit) => deposit.validationErrors.length === 0,
+      )
+
+      const pubkeysInValidDeposits = validDeposits.map(
+        (object) => object.pubkey,
+      )
+
+      const rawResponseFromFetchDeposits = await fetch(
+        `${connectedNetwork.validationURL}/${pubkeysInValidDeposits.join(",")}/deposits`,
+      )
+
+      const responseFromFetchDeposits =
+        (await rawResponseFromFetchDeposits.json()) ?? {}
+
+      const pubkeysInFetchedDeposits = responseFromFetchDeposits.data.map(
+        (fetchedDeposit: { publickey: string }) =>
+          formatHex(fetchedDeposit.publickey),
+      )
+
+      const uploadedDepositsWithServerValidationErrors =
+        uploadedDepositsWithValidationErrors.map((deposit) => {
+          if (pubkeysInFetchedDeposits.includes(deposit.pubkey)) {
+            deposit.validationErrors.push("Public key has existing deposit(s)")
+          }
+
+          return deposit
+        })
 
       dispatch({
         type: "setState",
         payload: {
-          validatedDesposits: parsedJSONObjects,
+          validatedDeposits: uploadedDepositsWithServerValidationErrors,
         },
       })
+
+      const hasAnyErrors = uploadedDepositsWithServerValidationErrors.some(
+        (deposit) => deposit.validationErrors?.length >= 1,
+      )
 
       dispatch({
         type: "showMessage",
         payload: {
-          type: "confirmation",
-          message: "File loaded and passed validation",
+          type: hasAnyErrors ? "error" : "confirmation",
+          message: `File loaded ${hasAnyErrors ? "with errors" : "successfully"}`,
         },
       })
     }
