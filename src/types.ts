@@ -9,7 +9,13 @@ export type AppAction =
       payload: Partial<AppState>
     }
   | {
-      type: "showMessage"
+      type: "dismissNotifications"
+      payload: {
+        notificationIds: AppNotification["id"][]
+      }
+    }
+  | {
+      type: "showNotification"
       payload: {
         type: "error" | "confirmation"
         message: string
@@ -21,19 +27,24 @@ export interface AppContextObject {
   state: AppState
 }
 
+export interface AppNotification {
+  id: string | number
+  type: "confirmation" | "error"
+  message: string
+}
+
 export interface AppState {
   account: string | null
   balance: string | null
-  confirmationMessages: string[]
   connectedNetworkId: SupportedNetworkId | null
   contractABI: Contract<typeof abi> | null
-  errorMessages: string[]
   isTermsAgreed: boolean
   isLoading: boolean
+  notifications: AppNotification[]
   sendContractData: string | null
   transactionResponse: string | null
   uploadedFileContents: string | null
-  validatedDeposits: DepositObject[]
+  validatedDeposits: Partial<DepositObject>[]
   web3: string | null
 }
 

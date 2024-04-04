@@ -18,7 +18,7 @@ export const AppHeader = () => {
   const handleClickConnectWallet = async () => {
     if (!ethereum) {
       dispatch({
-        type: "showMessage",
+        type: "showNotification",
         payload: {
           type: "error",
           message: "Please download metamask",

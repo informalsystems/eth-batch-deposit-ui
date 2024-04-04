@@ -1,18 +1,11 @@
-import { xor } from "lodash"
 import { ChangeEvent, useState } from "react"
 import { twMerge } from "tailwind-merge"
 import { constants } from "../constants"
 import { useAppContext } from "../context"
-import { formatHex } from "../helpers/formatHex"
-import { DepositObject } from "../types"
 import { Button } from "./Button"
 import { Icon } from "./Icon"
 import { LabeledBox } from "./LabeledBox"
 import { StyledText } from "./StyledText"
-
-const { optionalJSONKeys, requiredJSONKeys } = constants
-
-const allRecognizedKeys = [...optionalJSONKeys, ...requiredJSONKeys]
 
 export const BoxForUploadYourFile = () => {
   const {
@@ -26,14 +19,14 @@ export const BoxForUploadYourFile = () => {
 
   const showErrorMessage = (message: string) =>
     dispatch({
-      type: "showMessage",
+      type: "showNotification",
       payload: {
         type: "error",
         message,
       },
     })
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleUploadFile = (event: ChangeEvent<HTMLInputElement>) => {
     setIsDraggingOverTarget(false)
 
     const file = event.target.files?.[0]
@@ -41,10 +34,6 @@ export const BoxForUploadYourFile = () => {
     if (!file || !account || !connectedNetworkId) {
       return
     }
-
-    const accountSubstr = account.slice(-40).toUpperCase()
-
-    const connectedNetwork = constants.networksById[connectedNetworkId]
 
     if (!(file.size < 1024 * 1024)) {
       showErrorMessage("File exceeds 1MB limit")
@@ -60,122 +49,25 @@ export const BoxForUploadYourFile = () => {
 
     reader.onload = async (event) => {
       const rawJSON = String(event.target?.result ?? "[]")
-      const uploadedDeposits = JSON.parse(rawJSON) as DepositObject[]
 
-      if (!Array.isArray(uploadedDeposits)) {
+      const uploadedDataParsedToJSON = JSON.parse(rawJSON) as object | unknown[]
+
+      if (!Array.isArray(uploadedDataParsedToJSON)) {
         showErrorMessage("File is not an array of objects")
         return
       }
 
-      if (uploadedDeposits.length >= constants.maximumValue) {
+      if (uploadedDataParsedToJSON.length >= constants.maximumValue) {
         showErrorMessage(
           `Number of objects in uploade file exceeds limit of ${constants.maximumValue}`,
         )
         return
       }
 
-      const uploadedDepositsWithValidationErrors = uploadedDeposits.map(
-        (uploadedDeposit) => {
-          const validationErrors: string[] = []
-
-          const withdrawalSubstr = String(
-            uploadedDeposit.withdrawal_credentials,
-          )
-            .slice(-40)
-            .toUpperCase()
-
-          if (typeof uploadedDeposit !== "object") {
-            validationErrors.push(`Not an object`)
-          }
-
-          if (
-            String(uploadedDeposit.network_name).toLowerCase() !==
-            connectedNetwork.label.toLowerCase()
-          ) {
-            validationErrors.push(
-              `Network "${uploadedDeposit.network_name}" does not match connected network "${connectedNetwork.label}"`,
-            )
-          }
-
-          if (withdrawalSubstr !== accountSubstr) {
-            validationErrors.push(
-              `withdrawal_credentials does not match current metamask account`,
-            )
-          }
-
-          const differingPropertyNames = xor(
-            allRecognizedKeys,
-            Object.keys(uploadedDeposit),
-          )
-
-          differingPropertyNames.forEach((propertyName) => {
-            if (
-              (requiredJSONKeys as Readonly<string[]>).includes(propertyName)
-            ) {
-              validationErrors.push(
-                `Object is missing required property "${propertyName}"`,
-              )
-            }
-
-            if (!(allRecognizedKeys as string[]).includes(propertyName)) {
-              validationErrors.push(
-                `Object has unrecognized property "${propertyName}"`,
-              )
-            }
-          })
-
-          return {
-            ...uploadedDeposit,
-            validationErrors,
-          }
-        },
-      )
-
-      const validDeposits = uploadedDepositsWithValidationErrors.filter(
-        (deposit) => deposit.validationErrors.length === 0,
-      )
-
-      const pubkeysInValidDeposits = validDeposits.map(
-        (object) => object.pubkey,
-      )
-
-      const rawResponseFromFetchDeposits = await fetch(
-        `${connectedNetwork.validationURL}/${pubkeysInValidDeposits.join(",")}/deposits`,
-      )
-
-      const responseFromFetchDeposits =
-        (await rawResponseFromFetchDeposits.json()) ?? {}
-
-      const pubkeysInFetchedDeposits = responseFromFetchDeposits.data.map(
-        (fetchedDeposit: { publickey: string }) =>
-          formatHex(fetchedDeposit.publickey),
-      )
-
-      const uploadedDepositsWithServerValidationErrors =
-        uploadedDepositsWithValidationErrors.map((deposit) => {
-          if (pubkeysInFetchedDeposits.includes(deposit.pubkey)) {
-            deposit.validationErrors.push("Public key has existing deposit(s)")
-          }
-
-          return deposit
-        })
-
       dispatch({
         type: "setState",
         payload: {
-          validatedDeposits: uploadedDepositsWithServerValidationErrors,
-        },
-      })
-
-      const hasAnyErrors = uploadedDepositsWithServerValidationErrors.some(
-        (deposit) => deposit.validationErrors?.length >= 1,
-      )
-
-      dispatch({
-        type: "showMessage",
-        payload: {
-          type: hasAnyErrors ? "error" : "confirmation",
-          message: `File loaded ${hasAnyErrors ? "with errors" : "successfully"}`,
+          uploadedFileContents: rawJSON,
         },
       })
     }
@@ -291,7 +183,7 @@ export const BoxForUploadYourFile = () => {
           type="file"
           onDragEnter={() => setIsDraggingOverTarget(true)}
           onDragLeave={() => setIsDraggingOverTarget(false)}
-          onChange={handleChange}
+          onChange={handleUploadFile}
         />
       </div>
     </LabeledBox>

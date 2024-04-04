@@ -43,6 +43,42 @@ export default {
         },
       })
     }),
+    plugin(
+      function ({ matchUtilities, theme }) {
+        matchUtilities(
+          {
+            "bg-radient": (value) => ({
+              "background-image": `radial-gradient(${value},var(--tw-gradient-stops))`,
+            }),
+          },
+          { values: theme("radialGradients") },
+        )
+      },
+      {
+        theme: {
+          radialGradients: (() => {
+            const shapes = ["circle", "ellipse"]
+            const pos = {
+              c: "closest-side",
+              t: "at top",
+              b: "at bottom",
+              l: "at left",
+              r: "at right",
+              tl: "at top left",
+              tr: "at top right",
+              bl: "at bottom left",
+              br: "at bottom right",
+            }
+            let result = {}
+            for (const shape of shapes)
+              for (const [posName, posValue] of Object.entries(pos))
+                result[`${shape}-${posName}`] = `${shape} ${posValue}`
+
+            return result
+          })(),
+        },
+      },
+    ),
     formsPlugin,
   ],
 }

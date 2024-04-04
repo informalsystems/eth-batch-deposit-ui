@@ -1,16 +1,199 @@
-import { ReactNode } from "react"
+import { xor } from "lodash"
+import { ReactNode, useEffect } from "react"
 import { twJoin } from "tailwind-merge"
 import { constants } from "../constants"
 import { useAppContext } from "../context"
+import { formatHex } from "../functions/formatHex"
+import { DepositObject } from "../types"
 import { FormattedAddress } from "./FormattedAddress"
 import { Icon } from "./Icon"
 import { LabeledBox } from "./LabeledBox"
 import { StyledText } from "./StyledText"
 
+const { optionalJSONKeys, requiredJSONKeys } = constants
+
 export const BoxForTransactionDetails = () => {
   const {
-    state: { connectedNetworkId, validatedDeposits },
+    dispatch,
+    state: {
+      account,
+      connectedNetworkId,
+      uploadedFileContents,
+      validatedDeposits,
+    },
   } = useAppContext()
+
+  // When the network, uploaded file contents, or the connected wallet
+  // changes, re-validate the file contents
+  useEffect(() => {
+    if (!(account && connectedNetworkId && uploadedFileContents)) {
+      return
+    }
+
+    const setValidatedDeposits = (
+      validatedDeposits: Partial<DepositObject>[],
+    ) =>
+      dispatch({
+        type: "setState",
+        payload: {
+          validatedDeposits,
+        },
+      })
+
+    const showErrorMessage = (message: string) =>
+      dispatch({
+        type: "showNotification",
+        payload: {
+          type: "error",
+          message,
+        },
+      })
+
+    const validateUploadedFileContents = async () => {
+      const accountSubstr = account.slice(-40).toUpperCase()
+
+      const allRecognizedKeys = [...optionalJSONKeys, ...requiredJSONKeys]
+
+      const connectedNetwork = constants.networksById[connectedNetworkId]
+
+      const uploadedDataParsedToJSON = JSON.parse(
+        uploadedFileContents,
+      ) as DepositObject[]
+
+      const uploadedObjectsWithValidationErrors = uploadedDataParsedToJSON.map(
+        (uploadedObject) => {
+          const validationErrors: string[] = []
+
+          if (typeof uploadedObject !== "object") {
+            validationErrors.push(
+              `Not an object. Type is "${typeof uploadedObject}"`,
+            )
+            return { validationErrors }
+          }
+
+          const differingPropertyNames = xor(
+            allRecognizedKeys,
+            Object.keys(uploadedObject),
+          )
+
+          differingPropertyNames.forEach((propertyName) => {
+            if (
+              (requiredJSONKeys as Readonly<string[]>).includes(propertyName)
+            ) {
+              validationErrors.push(
+                `Object is missing required property "${propertyName}"`,
+              )
+            }
+
+            if (!(allRecognizedKeys as string[]).includes(propertyName)) {
+              validationErrors.push(
+                `Object has unrecognized property "${propertyName}"`,
+              )
+            }
+          })
+
+          // No errors so far? Then we can actually validate as if they're
+          // well-formed deposit objects
+          if (validationErrors.length === 0) {
+            const withdrawalSubstr = String(
+              uploadedObject.withdrawal_credentials,
+            )
+              .slice(-40)
+              .toUpperCase()
+
+            if (
+              String(uploadedObject.network_name).toLowerCase() !==
+              connectedNetwork.label.toLowerCase()
+            ) {
+              validationErrors.push(
+                `Network "${uploadedObject.network_name}" does not match connected network "${connectedNetwork.label}"`,
+              )
+            }
+
+            if (withdrawalSubstr !== accountSubstr) {
+              validationErrors.push(
+                `withdrawal_credentials does not match current metamask account`,
+              )
+            }
+          }
+
+          return {
+            ...uploadedObject,
+            validationErrors,
+          }
+        },
+      )
+
+      // Any objects without errors must be well-formed deposit objects
+      const validDeposits = uploadedObjectsWithValidationErrors.filter(
+        (deposit) => deposit.validationErrors.length === 0,
+      ) as DepositObject[]
+
+      if (validDeposits.length === 0) {
+        setValidatedDeposits(uploadedObjectsWithValidationErrors)
+        showErrorMessage("File loaded with errors")
+        return
+      }
+
+      const pubkeysInValidDeposits = validDeposits.map(
+        (object) => object.pubkey,
+      )
+
+      const rawResponseFromFetchDeposits = await fetch(
+        `${connectedNetwork.validationURL}/${pubkeysInValidDeposits.join(",")}/deposits`,
+      )
+
+      if (!rawResponseFromFetchDeposits.ok) {
+        setValidatedDeposits(
+          uploadedObjectsWithValidationErrors.map((deposit) => ({
+            ...deposit,
+            validationErrors: [
+              ...deposit.validationErrors,
+              "Could not fetch deposits",
+            ],
+          })),
+        )
+        showErrorMessage("Failed trying to fetch deposits")
+        return
+      }
+
+      const responseFromFetchDeposits =
+        (await rawResponseFromFetchDeposits.json()) ?? {}
+
+      const pubkeysInFetchedDeposits = responseFromFetchDeposits.data.map(
+        (fetchedDeposit: { publickey: string }) =>
+          formatHex(fetchedDeposit.publickey),
+      )
+
+      const uploadedDepositsWithServerValidationErrors =
+        uploadedObjectsWithValidationErrors.map((deposit) => {
+          if (
+            "pubkey" in deposit &&
+            pubkeysInFetchedDeposits.includes(deposit.pubkey)
+          ) {
+            deposit.validationErrors.push("Public key has existing deposit(s)")
+          }
+
+          return deposit
+        })
+
+      setValidatedDeposits(uploadedDepositsWithServerValidationErrors)
+
+      const hasAnyErrors = uploadedDepositsWithServerValidationErrors.some(
+        (deposit) => deposit.validationErrors?.length >= 1,
+      )
+
+      dispatch({
+        type: "showNotification",
+        payload: {
+          type: hasAnyErrors ? "error" : "confirmation",
+          message: `File loaded ${hasAnyErrors ? "with errors" : "successfully"}`,
+        },
+      })
+    }
+
+    validateUploadedFileContents()
+  }, [account, connectedNetworkId, dispatch, uploadedFileContents])
 
   if (!connectedNetworkId) {
     return
@@ -22,7 +205,7 @@ export const BoxForTransactionDetails = () => {
     (validatedDeposit) => validatedDeposit.validationErrors?.length === 0,
   )
 
-  const canSendTransaction = includedDeposits.length >= 1
+  const hasAnythingToShow = validatedDeposits.length >= 1
 
   const renderLabel = ({ renderedLabel }: { renderedLabel: ReactNode }) => (
     <div className="flex items-center justify-between">
@@ -37,7 +220,7 @@ export const BoxForTransactionDetails = () => {
       >
         {[
           [
-            "Total holeskyETH to be Staked",
+            `Total ${connectedNetwork.currency} to be Staked`,
             `${includedDeposits.length * 32} ${connectedNetwork.currency}`,
           ],
           ["Validator Count", includedDeposits.length],
@@ -67,7 +250,7 @@ export const BoxForTransactionDetails = () => {
 
   return (
     <LabeledBox
-      aria-disabled={canSendTransaction ? undefined : "true"}
+      aria-disabled={hasAnythingToShow ? undefined : "true"}
       className="
         flex
         flex-col

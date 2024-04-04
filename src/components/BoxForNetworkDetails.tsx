@@ -26,8 +26,30 @@ export const BoxForNetworkDetails = () => {
     : null
 
   useEffect(() => {
+    const showErrorMessage = (message: string) =>
+      dispatch({
+        type: "showNotification",
+        payload: {
+          type: "error",
+          message,
+        },
+      })
+
     const handleChainChanged = (networkId: SupportedNetworkId) => {
       const web3 = new Web3(ethereum)
+
+      // Wipe out any state that was based on the network
+      dispatch({
+        type: "setState",
+        payload: {
+          notifications: [],
+          connectedNetworkId: null,
+        },
+      })
+
+      if (!(networkId in constants.networksById)) {
+        showErrorMessage(`Unrecognized network`)
+      }
 
       const { smartContractAddress } = constants.networksById[networkId]
 
@@ -42,13 +64,7 @@ export const BoxForNetworkDetails = () => {
           },
         })
       } catch (error) {
-        dispatch({
-          type: "showMessage",
-          payload: {
-            type: "error",
-            message: `Error initializing contract instance: ${error}`,
-          },
-        })
+        showErrorMessage(`Error initializing contract instance: ${error}`)
       }
     }
 
@@ -78,7 +94,7 @@ export const BoxForNetworkDetails = () => {
       })
     } catch (error) {
       dispatch({
-        type: "showMessage",
+        type: "showNotification",
         payload: {
           message: String(error) ?? "Unknown error",
           type: "error",

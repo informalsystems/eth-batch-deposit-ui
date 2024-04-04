@@ -16,6 +16,11 @@ interface StyledTextProps {
   variant?: keyof typeof classNamesByVariant
 }
 
+const classNamesForAllVariants = `
+  text-textColor
+  dark:text-white
+`
+
 const classNamesByVariant = {
   accentuated: `
     text-lg
@@ -24,29 +29,39 @@ const classNamesByVariant = {
   `,
   code: `
     font-code
+    text-inherit
+    dark:text-inherit
   `,
   heading1: `
     font-display
     text-6xl
     font-bold
+    text-inherit
+    dark:text-inherit
   `,
   heading2: `
     font-display
     text-2xl
     font-bold
+    text-inherit
+    dark:text-inherit
   `,
   heading3: `
     font-display
     text-lg
     font-bold
+    text-inherit
+    dark:text-inherit
   `,
   label: `
     text-sm
     uppercase
     text-fadedTextColor
+    dark:text-white/60
   `,
   link: `
     text-accentColor
+    dark:text-white/80
     underline
   `,
 }
@@ -62,7 +77,11 @@ export const StyledText = <C extends React.ElementType = "span">({
 
   return (
     <Component
-      className={twMerge(variant && classNamesByVariant[variant], className)}
+      className={twMerge(
+        classNamesForAllVariants,
+        variant && classNamesByVariant[variant],
+        className,
+      )}
       {...otherProps}
     >
       {children}

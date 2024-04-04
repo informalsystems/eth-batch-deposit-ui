@@ -4,6 +4,7 @@ import { BoxForTransaction } from "./components/BoxForTransaction"
 import { BoxForTransactionDetails } from "./components/BoxForTransactionDetails"
 import { BoxForUploadYourFile } from "./components/BoxForUploadYourFile"
 import { ModalWindowForTerms } from "./components/ModalWindowForTerms"
+import { Notifications } from "./components/Notifications"
 import { SectionContainer } from "./components/SectionContainer"
 import { AppContext } from "./context"
 import { useReducerWithPersistedStateKeys } from "./hooks/useReducerWithPersistedStateKeys"
@@ -24,6 +25,8 @@ function App() {
         state,
       }}
     >
+      <Notifications />
+
       <ModalWindowForTerms />
 
       <main className="space-y-6 pb-12">

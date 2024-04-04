@@ -44,6 +44,7 @@ export const LabeledBox = ({
       <div
         className={twMerge(
           `
+            dark
             bg-brandColor
             px-6
             py-3
