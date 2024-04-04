@@ -57,9 +57,9 @@ export const BoxForUploadYourFile = () => {
         return
       }
 
-      if (uploadedDataParsedToJSON.length >= constants.maximumValue) {
+      if (uploadedDataParsedToJSON.length >= constants.maximumDepositsPerFile) {
         showErrorMessage(
-          `Number of objects in uploade file exceeds limit of ${constants.maximumValue}`,
+          `Number of objects in uploade file exceeds limit of ${constants.maximumDepositsPerFile}`,
         )
         return
       }

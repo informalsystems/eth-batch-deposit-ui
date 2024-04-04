@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useCallback, useEffect } from "react"
 import { Web3 } from "web3"
 import { useAppContext } from "../context"
 import { Button } from "./Button"
@@ -15,6 +15,29 @@ export const AppHeader = () => {
     state: { account },
   } = useAppContext()
 
+  const handleAccountsChanged = useCallback(
+    async (accounts: string[]) => {
+      const newAccount = accounts[0]
+
+      const web3 = new Web3(ethereum)
+
+      const balanceInWei = await web3.eth.getBalance(newAccount)
+
+      const balanceInEther = web3.utils.fromWei(balanceInWei, "ether")
+
+      const humanReadableBalance = parseFloat(balanceInEther).toFixed(2)
+
+      dispatch({
+        type: "setState",
+        payload: {
+          account: newAccount,
+          balance: humanReadableBalance,
+        },
+      })
+    },
+    [dispatch],
+  )
+
   const handleClickConnectWallet = async () => {
     if (!ethereum) {
       dispatch({
@@ -24,6 +47,7 @@ export const AppHeader = () => {
           message: "Please download metamask",
         },
       })
+      return
     }
 
     // Get permission to call eth_accounts
@@ -35,40 +59,18 @@ export const AppHeader = () => {
       method: "eth_accounts",
     })
 
-    const firstAccountAddress = accounts[0]
-
-    dispatch({
-      type: "setState",
-      payload: {
-        account: firstAccountAddress,
-      },
-    })
+    handleAccountsChanged(accounts)
   }
 
   useEffect(() => {
-    if (!account) {
-      return
+    ethereum.on("accountsChanged", handleAccountsChanged)
+  }, [handleAccountsChanged])
+
+  useEffect(() => {
+    if (account) {
+      handleAccountsChanged([account])
     }
-
-    const getAccountDetails = async () => {
-      const web3 = new Web3(ethereum)
-
-      const balanceInWei = await web3.eth.getBalance(account)
-
-      const balanceInEther = web3.utils.fromWei(balanceInWei, "ether")
-
-      const humanReadableBalance = parseFloat(balanceInEther).toFixed(2)
-
-      dispatch({
-        type: "setState",
-        payload: {
-          balance: humanReadableBalance,
-        },
-      })
-    }
-
-    getAccountDetails()
-  }, [account, dispatch])
+  }, [account, handleAccountsChanged])
 
   return (
     <header

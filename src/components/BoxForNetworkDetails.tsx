@@ -1,6 +1,4 @@
 import { MouseEvent, useEffect } from "react"
-import { Web3 } from "web3"
-import abi from "../abi.json"
 import { constants } from "../constants"
 import { useAppContext } from "../context"
 import { SupportedNetworkId } from "../types"
@@ -36,35 +34,17 @@ export const BoxForNetworkDetails = () => {
       })
 
     const handleChainChanged = (networkId: SupportedNetworkId) => {
-      const web3 = new Web3(ethereum)
-
       // Wipe out any state that was based on the network
       dispatch({
         type: "setState",
         payload: {
           notifications: [],
-          connectedNetworkId: null,
+          connectedNetworkId: networkId,
         },
       })
 
       if (!(networkId in constants.networksById)) {
         showErrorMessage(`Unrecognized network`)
-      }
-
-      const { smartContractAddress } = constants.networksById[networkId]
-
-      try {
-        const contractABI = new web3.eth.Contract(abi, smartContractAddress)
-
-        dispatch({
-          type: "setState",
-          payload: {
-            connectedNetworkId: networkId,
-            contractABI,
-          },
-        })
-      } catch (error) {
-        showErrorMessage(`Error initializing contract instance: ${error}`)
       }
     }
 
@@ -220,7 +200,7 @@ export const BoxForNetworkDetails = () => {
             {
               icon: "arrow-up-to-line",
               label: "Max Amount Per Tx",
-              value: `${(constants.maximumValue * 32).toLocaleString()} ${connectedNetwork.currency}`,
+              value: `${(constants.maximumDepositsPerFile * 32).toLocaleString()} ${connectedNetwork.currency}`,
             },
           ] as const
         ).map(({ icon, label, value }) => (

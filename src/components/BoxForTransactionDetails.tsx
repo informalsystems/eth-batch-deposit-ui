@@ -50,7 +50,10 @@ export const BoxForTransactionDetails = () => {
       })
 
     const validateUploadedFileContents = async () => {
-      const accountSubstr = account.slice(-40).toUpperCase()
+      const formattedAccount = account.replace(
+        /^0x1/,
+        "0100000000000000000000001",
+      )
 
       const allRecognizedKeys = [...optionalJSONKeys, ...requiredJSONKeys]
 
@@ -95,11 +98,35 @@ export const BoxForTransactionDetails = () => {
           // No errors so far? Then we can actually validate as if they're
           // well-formed deposit objects
           if (validationErrors.length === 0) {
-            const withdrawalSubstr = String(
-              uploadedObject.withdrawal_credentials,
-            )
-              .slice(-40)
-              .toUpperCase()
+            if (!String(uploadedObject.pubkey).match(/^[0-9a-fA-F]{96}$/)) {
+              validationErrors.push(`Pubkey is invalid`)
+            }
+
+            if (
+              Number(uploadedObject.amount) !== constants.requiredDepositAmount
+            ) {
+              validationErrors.push(`Deposit amount is incorrect`)
+            }
+
+            if (!String(uploadedObject.signature).match(/^[0-9a-fA-F]{192}$/)) {
+              validationErrors.push(`Deposit signature is invalid`)
+            }
+
+            if (
+              !String(uploadedObject.deposit_message_root).match(
+                /^[0-9a-fA-F]{64}$/,
+              )
+            ) {
+              validationErrors.push(`Deposit message root is invalid`)
+            }
+
+            if (
+              !String(uploadedObject.deposit_data_root).match(
+                /^[0-9a-fA-F]{64}$/,
+              )
+            ) {
+              validationErrors.push(`Deposit data root is invalid`)
+            }
 
             if (
               String(uploadedObject.network_name).toLowerCase() !==
@@ -110,9 +137,27 @@ export const BoxForTransactionDetails = () => {
               )
             }
 
-            if (withdrawalSubstr !== accountSubstr) {
+            if (uploadedObject.withdrawal_credentials !== formattedAccount) {
               validationErrors.push(
                 `withdrawal_credentials does not match current metamask account`,
+              )
+            }
+
+            const withdrawalCredentials = String(
+              uploadedObject.withdrawal_credentials,
+            )
+
+            if (
+              !withdrawalCredentials.startsWith("0100000000000000000000001") ||
+              withdrawalCredentials.length !== 64 ||
+              !withdrawalCredentials.match(/^[0-9a-fA-F]{64}$/)
+            ) {
+              validationErrors.push(`withdrawal_credentials address is invalid`)
+            }
+
+            if (uploadedObject.fork_version !== connectedNetwork.forkVersion) {
+              validationErrors.push(
+                `fork_version does not match connected network`,
               )
             }
           }
@@ -169,7 +214,7 @@ export const BoxForTransactionDetails = () => {
         uploadedObjectsWithValidationErrors.map((deposit) => {
           if (
             "pubkey" in deposit &&
-            pubkeysInFetchedDeposits.includes(deposit.pubkey)
+            pubkeysInFetchedDeposits.includes(formatHex(deposit.pubkey))
           ) {
             deposit.validationErrors.push("Public key has existing deposit(s)")
           }
@@ -308,9 +353,9 @@ export const BoxForTransactionDetails = () => {
               </div>
               <div
                 className="
-                px-6
-                py-3
-             "
+                  px-6
+                  py-3
+                "
               >
                 <strong>PubKey:</strong>{" "}
                 {deposit.pubkey ? (

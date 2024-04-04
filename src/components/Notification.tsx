@@ -18,6 +18,7 @@ const classNamesForAllVariants = {
     rounded-md
     flex
     items-stretch
+    justify-between
     dark
     shadow-lg
     border-2
@@ -34,6 +35,7 @@ const classNamesForAllVariants = {
   messageContainer: `
     px-6
     py-3
+    w-full
   `,
 }
 

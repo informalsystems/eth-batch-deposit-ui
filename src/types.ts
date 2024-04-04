@@ -45,7 +45,6 @@ export interface AppState {
   transactionResponse: string | null
   uploadedFileContents: string | null
   validatedDeposits: Partial<DepositObject>[]
-  web3: string | null
 }
 
 type OptionalDepositKeys = (typeof constants.optionalJSONKeys)[number]

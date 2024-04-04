@@ -14,7 +14,6 @@ const initialState: AppState = {
   transactionResponse: null,
   uploadedFileContents: null,
   validatedDeposits: [],
-  web3: null,
 }
 
 const AppReducer = (state: AppState, action: AppAction) => {

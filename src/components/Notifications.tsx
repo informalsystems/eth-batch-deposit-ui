@@ -34,6 +34,7 @@ const Notifications = () => {
           fixed
           bottom-0
           right-0
+          z-50
           flex
           w-96
           flex-col
