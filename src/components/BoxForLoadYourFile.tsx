@@ -1,4 +1,5 @@
 import { ChangeEvent, useState } from "react"
+import { twJoin } from "tailwind-merge"
 import { constants } from "../constants"
 import { useAppContext } from "../context"
 import { Box } from "./Box"
@@ -13,6 +14,10 @@ export const BoxForLoadYourFile = () => {
   } = useAppContext()
 
   const [isDraggingOverTarget, setIsDraggingOverTarget] = useState(false)
+
+  const fileHasErrors = validatedDeposits.some(
+    (deposit) => deposit.validationErrors?.length,
+  )
 
   const hasSelectedFile = validatedDeposits.length >= 1
 
@@ -86,7 +91,13 @@ export const BoxForLoadYourFile = () => {
         bg-white
         p-6
       "
-      classNameForLabel="bg-accentColor"
+      classNameForLabel={twJoin(
+        hasSelectedFile
+          ? fileHasErrors
+            ? `bg-red-500`
+            : `bg-emerald-500`
+          : `bg-accentColor`,
+      )}
       label="Load Your File"
     >
       <Box
@@ -112,8 +123,18 @@ export const BoxForLoadYourFile = () => {
               has-selected-file
               dark
               border-solid
-              bg-brandColor
-              hover:bg-brandColor/90
+              border-emerald-500
+              bg-emerald-500
+              pt-20
+              hover:border-emerald-500
+              hover:bg-emerald-500
+            `,
+          fileHasErrors &&
+            `
+              border-red-500
+              bg-red-500
+              hover:border-red-500
+              hover:bg-red-500
             `,
           isDraggingOverTarget &&
             `
@@ -150,11 +171,18 @@ export const BoxForLoadYourFile = () => {
 
         {hasSelectedFile && (
           <Button
-            className="text-xs"
+            className={twJoin(
+              !fileHasErrors && `opacity-0`,
+              `
+                text-xs
+                transition-opacity
+                group-hover:opacity-100
+              `,
+            )}
             iconLeftName="folder-magnifying-glass"
             variant="unstyled"
           >
-            Select Another...
+            Change File
           </Button>
         )}
 

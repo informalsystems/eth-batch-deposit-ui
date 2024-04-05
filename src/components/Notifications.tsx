@@ -62,8 +62,8 @@ const Notifications = () => {
           w-[100vw]
           -translate-x-1/2
           -translate-y-1/2
-          from-brandColor
-          to-brandColor/0
+          from-neutral-950
+          to-neutral-950/0
           opacity-50
           transition-opacity
           bg-radient-ellipse-c

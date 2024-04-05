@@ -25,6 +25,8 @@ const classNamesForAllVariants = {
     border-white
     overflow-hidden
     w-full
+    text-white
+    relative
   `,
 
   iconContainer: `
@@ -36,6 +38,9 @@ const classNamesForAllVariants = {
     px-6
     py-3
     w-full
+    max-h-96
+    overflow-y-auto
+    [scrollbar-color:white_transparent]
   `,
 }
 
@@ -100,6 +105,7 @@ const Notification = ({
           />
         </Box>
       </div>
+
       <div
         className={twJoin(
           classNamesForAllVariants.messageContainer,
@@ -108,15 +114,21 @@ const Notification = ({
       >
         <Box>{children}</Box>
       </div>
-      <div>
-        <Box
-          as="button"
-          className={classNamesForAllVariants.iconContainer}
-          onClick={handleClickDismiss}
-        >
-          <Icon name="xmark" />
-        </Box>
-      </div>
+
+      <Box
+        as="button"
+        className={[
+          classNamesForAllVariants.iconContainer,
+          `
+            absolute
+            right-0
+            top-0
+          `,
+        ]}
+        onClick={handleClickDismiss}
+      >
+        <Icon name="xmark" />
+      </Box>
     </div>
   )
 }

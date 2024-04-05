@@ -304,8 +304,9 @@ export const BoxForTransactionDetails = () => {
       className="
         flex
         flex-col
-        gap-0
+        gap-px
         bg-brandColor/5
+        pt-px
       "
       label="Transaction Details"
       renderLabel={renderLabel}
@@ -316,23 +317,21 @@ export const BoxForTransactionDetails = () => {
         const isValid = validationErrors.length === 0
 
         return (
-          <div
-            className="odd:bg-brandColor/5"
-            key={index}
-          >
+          <div key={index}>
             <div
               className={twJoin(
                 `
                   flex
                   items-center
+                  text-white
                 `,
                 isValid
                   ? `
-                      bg-emerald-500/5
+                      bg-emerald-500/90
                       text-emerald-950
                     `
                   : `
-                      bg-red-500/5
+                      bg-red-500/90
                       text-red-950
                     `,
               )}
@@ -345,12 +344,12 @@ export const BoxForTransactionDetails = () => {
                     self-stretch
                     px-6
                   `,
-                  isValid ? "bg-emerald-500/10" : "bg-red-500/10",
+                  isValid ? "bg-emerald-600/50" : "bg-red-600/50",
                 )}
               >
                 <Icon
                   className={twJoin(
-                    isValid ? "text-emerald-500" : "text-red-500",
+                    isValid ? "text-emerald-50" : "text-red-50",
                   )}
                   name={isValid ? "circle-check" : "circle-xmark"}
                   variant="solid"
