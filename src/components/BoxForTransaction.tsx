@@ -153,8 +153,6 @@ export const BoxForTransaction = () => {
             .encodeABI(),
         }
 
-        console.log({ transactionParameters })
-
         try {
           const response = await web3.eth.sendTransaction(transactionParameters)
 
