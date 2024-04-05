@@ -4,6 +4,7 @@ import { TransactionReceipt, Web3 } from "web3"
 import abi from "../abi.json"
 import { constants } from "../constants"
 import { useAppContext } from "../context"
+import { cleanHex } from "../functions/cleanHex"
 import { formatHex } from "../functions/formatHex"
 import { Box } from "./Box"
 import { Button } from "./Button"
@@ -158,7 +159,11 @@ export const BoxForTransaction = () => {
 
           setIsTransactionDetailsModalOpen(false)
           setIsTransactionResultModalOpen(true)
-          setTransactionResult(response)
+          setTransactionResult({
+            blockHash: cleanHex(`${response.blockHash}`, 66),
+            blockNumber: `${response.blockNumber}`.replace(/[^0-9]/g, ""),
+            transactionHash: cleanHex(`${response.transactionHash}`, 66),
+          })
         } catch (error) {
           showErrorMessage(`Error executing transaction: ${error}`)
         }
