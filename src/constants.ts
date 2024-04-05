@@ -1,4 +1,5 @@
 export const constants = {
+  dismissConfirmationNotificationsDelay: 5000, // milliseconds
   maximumDepositsPerFile: 100,
   networksById: {
     "0x1": {

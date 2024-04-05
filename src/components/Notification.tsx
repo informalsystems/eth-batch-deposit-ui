@@ -1,5 +1,11 @@
-import { ComponentPropsWithoutRef, MouseEvent } from "react"
+import {
+  ComponentPropsWithoutRef,
+  MouseEvent,
+  useEffect,
+  useState,
+} from "react"
 import { twJoin } from "tailwind-merge"
+import { constants } from "../constants"
 import { AppNotification } from "../types"
 import { Box } from "./Box"
 import { Icon, IconName, IconVariant } from "./Icon"
@@ -78,12 +84,26 @@ const Notification = ({
   iconVariant = "solid",
   onDismiss,
 }: NotificationProps) => {
+  const [hasRendered, setHasRendered] = useState(false)
+
   const handleClickDismiss = (event: MouseEvent) => {
     event.preventDefault()
     event.stopPropagation()
 
     onDismiss()
   }
+
+  useEffect(() => {
+    if (variant === "confirmation") {
+      const timer = setTimeout(() => {
+        setHasRendered(true)
+      }, 1)
+
+      return () => {
+        clearTimeout(timer)
+      }
+    }
+  }, [variant])
 
   return (
     <div
@@ -92,6 +112,29 @@ const Notification = ({
         classNamesByVariant[variant].className.container,
       )}
     >
+      {variant === "confirmation" && (
+        <div
+          className={twJoin(
+            `
+              absolute
+              bottom-0
+              left-0
+              right-0
+              h-1
+              origin-left
+              scale-x-0
+              bg-white
+              transition-transform
+              ease-linear
+            `,
+            hasRendered && `scale-x-100`,
+          )}
+          style={{
+            transitionDuration: `${constants.dismissConfirmationNotificationsDelay}ms`,
+          }}
+        />
+      )}
+
       <div
         className={twJoin(
           classNamesForAllVariants.iconContainer,

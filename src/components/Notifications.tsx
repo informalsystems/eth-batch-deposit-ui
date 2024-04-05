@@ -1,4 +1,6 @@
+import { useEffect } from "react"
 import { twMerge } from "tailwind-merge"
+import { constants } from "../constants"
 import { useAppContext } from "../context"
 import { AppNotification } from "../types"
 import { Button } from "./Button"
@@ -25,6 +27,29 @@ const Notifications = () => {
         notificationIds,
       },
     })
+
+  useEffect(() => {
+    const confirmationNotifications = notifications.filter(
+      ({ type }) => type === "confirmation",
+    )
+
+    const timers = confirmationNotifications.map(({ id }, index) =>
+      setTimeout(
+        () =>
+          dispatch({
+            type: "dismissNotifications",
+            payload: {
+              notificationIds: [id],
+            },
+          }),
+        constants.dismissConfirmationNotificationsDelay + 200 * index,
+      ),
+    )
+
+    return () => {
+      timers.map((timer) => clearTimeout(timer))
+    }
+  }, [dispatch, notifications])
 
   return (
     <div
