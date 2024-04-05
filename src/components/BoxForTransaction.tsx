@@ -5,12 +5,12 @@ import abi from "../abi.json"
 import { constants } from "../constants"
 import { useAppContext } from "../context"
 import { formatHex } from "../functions/formatHex"
+import { Box } from "./Box"
 import { Button } from "./Button"
 import { FormattedAddress } from "./FormattedAddress"
 import { Icon } from "./Icon"
 import { LabeledBox } from "./LabeledBox"
 import { ModalWindow } from "./ModalWindow"
-import { StyledText } from "./StyledText"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ethereum = (window as any).ethereum
@@ -23,20 +23,14 @@ export const BoxForTransaction = () => {
     useState(false)
 
   const [isTransactionResultModalOpen, setIsTransactionResultModalOpen] =
-    useState(true)
+    useState(false)
 
   const [transactionResult, setTransactionResult] =
-    useState<Partial<TransactionReceipt> | null>({
-      blockHash:
-        "0x18369465b01fd5e71db8c35be43f6d3f3e355870d730a1893242373a30f430cc",
-      blockNumber: 1281467n,
-      transactionHash:
-        "0xfdddaeb90f47fa7fabd5f496338bf10593b55eba84e239164c80413de4c29b98",
-    })
+    useState<Partial<TransactionReceipt> | null>(null)
 
   const {
     dispatch,
-    state: { account, connectedNetworkId, validatedDeposits },
+    state: { connectedAccountAddress, connectedNetworkId, validatedDeposits },
   } = useAppContext()
 
   if (!connectedNetworkId) {
@@ -63,19 +57,23 @@ export const BoxForTransaction = () => {
   const handleClickVerifyIdentity = async (event: MouseEvent) => {
     event.preventDefault()
 
-    if (!account) {
+    if (!connectedAccountAddress) {
       return
     }
 
     const web3 = new Web3(ethereum)
 
-    const sig = await web3.eth.personal.sign("Verify your address", account, "")
+    const sig = await web3.eth.personal.sign(
+      "Verify your address",
+      connectedAccountAddress,
+      "",
+    )
 
     const result = web3.eth.accounts
       .recover("Verify your address", sig)
       .toLowerCase()
 
-    if (result === account) {
+    if (result === connectedAccountAddress) {
       setIsIdentityVerificationModalOpen(false)
       setIsTransactionDetailsModalOpen(true)
     }
@@ -142,7 +140,7 @@ export const BoxForTransaction = () => {
 
       try {
         const transactionParameters = {
-          from: account!,
+          from: connectedAccountAddress!,
           to: smartContractAddress,
           value: totalAmountInWei,
           data: contractABI.methods
@@ -187,15 +185,12 @@ export const BoxForTransaction = () => {
       )}
       label="Transaction"
     >
-      <div
+      <Box
         className="
-          flex
           w-full
-          flex-col
-          items-center
-          justify-center
           gap-6
         "
+        variant="centered-column"
       >
         <Icon
           className="text-8xl text-brandColor/50"
@@ -233,17 +228,17 @@ export const BoxForTransaction = () => {
           isOpen={isTransactionResultModalOpen}
           onClose={() => setIsTransactionResultModalOpen(false)}
         >
-          <StyledText
+          <Box
             as="h2"
             variant="heading2"
           >
             Transaction Complete
-          </StyledText>
+          </Box>
           {(
             [
               [
                 "Transaction Hash",
-                <StyledText
+                <Box
                   as="a"
                   href={`${connectedNetwork.pubkeyBeaconchainURL}/tx/${transactionResult?.transactionHash}`}
                   target="_blank"
@@ -257,11 +252,11 @@ export const BoxForTransaction = () => {
                     className="ml-1"
                     name="square-up-right"
                   />
-                </StyledText>,
+                </Box>,
               ],
               [
                 "Block Hash",
-                <StyledText
+                <Box
                   as="a"
                   href={`${connectedNetwork.pubkeyBeaconchainURL}/block/${transactionResult?.blockHash}`}
                   target="_blank"
@@ -275,11 +270,11 @@ export const BoxForTransaction = () => {
                     className="ml-1"
                     name="square-up-right"
                   />
-                </StyledText>,
+                </Box>,
               ],
               [
                 "Block Number",
-                <StyledText
+                <Box
                   as="a"
                   href={`${connectedNetwork.pubkeyBeaconchainURL}/block/${transactionResult?.blockNumber}`}
                   target="_blank"
@@ -290,22 +285,22 @@ export const BoxForTransaction = () => {
                     className="ml-1"
                     name="square-up-right"
                   />
-                </StyledText>,
+                </Box>,
               ],
             ] as const
           ).map(([label, value]) => (
             <div key={label}>
-              <StyledText
+              <Box
                 className="font-bold !text-white"
                 variant="label"
               >
                 {label}
-              </StyledText>
+              </Box>
               <div className="break-words">{value}</div>
             </div>
           ))}
         </ModalWindow>
-      </div>
+      </Box>
     </LabeledBox>
   )
 }

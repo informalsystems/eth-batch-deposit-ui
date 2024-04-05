@@ -1,16 +1,15 @@
 import { ChangeEvent, useState } from "react"
-import { twMerge } from "tailwind-merge"
 import { constants } from "../constants"
 import { useAppContext } from "../context"
+import { Box } from "./Box"
 import { Button } from "./Button"
 import { Icon } from "./Icon"
 import { LabeledBox } from "./LabeledBox"
-import { StyledText } from "./StyledText"
 
-export const BoxForUploadYourFile = () => {
+export const BoxForLoadYourFile = () => {
   const {
     dispatch,
-    state: { account, connectedNetworkId, validatedDeposits },
+    state: { connectedAccountAddress, connectedNetworkId, validatedDeposits },
   } = useAppContext()
 
   const [isDraggingOverTarget, setIsDraggingOverTarget] = useState(false)
@@ -26,12 +25,12 @@ export const BoxForUploadYourFile = () => {
       },
     })
 
-  const handleUploadFile = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleLoadFile = (event: ChangeEvent<HTMLInputElement>) => {
     setIsDraggingOverTarget(false)
 
     const file = event.target.files?.[0]
 
-    if (!file || !account || !connectedNetworkId) {
+    if (!file || !connectedAccountAddress || !connectedNetworkId) {
       return
     }
 
@@ -50,16 +49,16 @@ export const BoxForUploadYourFile = () => {
     reader.onload = async (event) => {
       const rawJSON = String(event.target?.result ?? "[]")
 
-      const uploadedDataParsedToJSON = JSON.parse(rawJSON) as object | unknown[]
+      const loadedDataParsedToJSON = JSON.parse(rawJSON) as object | unknown[]
 
-      if (!Array.isArray(uploadedDataParsedToJSON)) {
+      if (!Array.isArray(loadedDataParsedToJSON)) {
         showErrorMessage("File is not an array of objects")
         return
       }
 
-      if (uploadedDataParsedToJSON.length >= constants.maximumDepositsPerFile) {
+      if (loadedDataParsedToJSON.length >= constants.maximumDepositsPerFile) {
         showErrorMessage(
-          `Number of objects in uploade file exceeds limit of ${constants.maximumDepositsPerFile}`,
+          `Number of objects in loaded file exceeds limit of ${constants.maximumDepositsPerFile}`,
         )
         return
       }
@@ -67,7 +66,7 @@ export const BoxForUploadYourFile = () => {
       dispatch({
         type: "setState",
         payload: {
-          uploadedFileContents: rawJSON,
+          loadedFileContents: rawJSON,
         },
       })
     }
@@ -88,19 +87,15 @@ export const BoxForUploadYourFile = () => {
         p-6
       "
       classNameForLabel="bg-accentColor"
-      label="Upload Your File"
+      label="Load Your File"
     >
-      <div
-        className={twMerge(
+      <Box
+        className={[
           `
             group
             relative
-            flex
             h-full
             w-full
-            flex-col
-            items-center
-            justify-center
             gap-6
             rounded-xl
             border-2
@@ -127,7 +122,8 @@ export const BoxForUploadYourFile = () => {
               border-brandColor
               bg-brandColor
             `,
-        )}
+        ]}
+        variant="centered-column"
       >
         <Icon
           className="
@@ -142,15 +138,15 @@ export const BoxForUploadYourFile = () => {
           variant="thin"
         />
 
-        <StyledText variant="accentuated">
+        <Box variant="accentuated">
           {hasSelectedFile ? (
             <span>File Loaded</span>
           ) : (
             <span>
-              Upload your <code>deposit_data.json</code> file to&nbsp;proceed
+              Load your <code>deposit_data.json</code> file to&nbsp;proceed
             </span>
           )}
-        </StyledText>
+        </Box>
 
         {hasSelectedFile && (
           <Button
@@ -183,9 +179,9 @@ export const BoxForUploadYourFile = () => {
           type="file"
           onDragEnter={() => setIsDraggingOverTarget(true)}
           onDragLeave={() => setIsDraggingOverTarget(false)}
-          onChange={handleUploadFile}
+          onChange={handleLoadFile}
         />
-      </div>
+      </Box>
     </LabeledBox>
   )
 }

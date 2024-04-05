@@ -1,8 +1,8 @@
 import { AppHeader } from "./components/AppHeader"
+import { BoxForLoadYourFile } from "./components/BoxForLoadYourFile"
 import { BoxForNetworkDetails } from "./components/BoxForNetworkDetails"
 import { BoxForTransaction } from "./components/BoxForTransaction"
 import { BoxForTransactionDetails } from "./components/BoxForTransactionDetails"
-import { BoxForUploadYourFile } from "./components/BoxForUploadYourFile"
 import { ModalWindowForTerms } from "./components/ModalWindowForTerms"
 import { Notifications } from "./components/Notifications"
 import { SectionContainer } from "./components/SectionContainer"
@@ -14,7 +14,7 @@ function App() {
   const [state, dispatch] = useReducerWithPersistedStateKeys({
     initialState,
     localStorageKeyName: "saved-state",
-    persistedKeys: ["account", "isTermsAgreed"],
+    persistedKeys: ["connectedAccountAddress", "isTermsAgreed"],
     reducer: AppReducer,
   })
 
@@ -42,7 +42,7 @@ function App() {
         >
           <BoxForNetworkDetails />
 
-          <BoxForUploadYourFile />
+          <BoxForLoadYourFile />
 
           <BoxForTransaction />
         </SectionContainer>

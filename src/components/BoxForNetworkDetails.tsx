@@ -2,11 +2,11 @@ import { MouseEvent, useEffect } from "react"
 import { constants } from "../constants"
 import { useAppContext } from "../context"
 import { SupportedNetworkId } from "../types"
+import { Box } from "./Box"
 import { Button } from "./Button"
 import { FormattedAddress } from "./FormattedAddress"
 import { Icon } from "./Icon"
 import { LabeledBox } from "./LabeledBox"
-import { StyledText } from "./StyledText"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ethereum = (window as any).ethereum
@@ -14,10 +14,14 @@ const ethereum = (window as any).ethereum
 export const BoxForNetworkDetails = () => {
   const {
     dispatch,
-    state: { account, balance, connectedNetworkId },
+    state: {
+      connectedAccountAddress,
+      connectedAccountBalance,
+      connectedNetworkId,
+    },
   } = useAppContext()
 
-  const isFullyConnected = !!account && !!connectedNetworkId
+  const isFullyConnected = !!connectedAccountAddress && !!connectedNetworkId
 
   const connectedNetwork = isFullyConnected
     ? constants.networksById[connectedNetworkId]
@@ -94,7 +98,7 @@ export const BoxForNetworkDetails = () => {
       "
       label="Network Details"
       renderLabel={({ renderedLabel }) => (
-        <div
+        <Box
           className="
             dark
             flex
@@ -132,21 +136,19 @@ export const BoxForNetworkDetails = () => {
               })}
             </ul>
           )}
-        </div>
+        </Box>
       )}
     >
       {!connectedNetwork && (
-        <div
+        <Box
           className="
-            flex
             h-full
-            items-center
-            justify-center
             text-fadedTextColor
           "
+          variant="centered-row"
         >
           Not Connected
-        </div>
+        </Box>
       )}
       {isFullyConnected &&
         connectedNetwork &&
@@ -156,31 +158,31 @@ export const BoxForNetworkDetails = () => {
               icon: "id-card-clip",
               label: "Connected Account",
               value: (
-                <StyledText
+                <Box
                   as="a"
-                  href={`${connectedNetwork.pubkeyBeaconchainURL}/address/${account}`}
+                  href={`${connectedNetwork.pubkeyBeaconchainURL}/address/${connectedAccountAddress}`}
                   target="_blank"
                   variant="link"
                 >
-                  <FormattedAddress address={account} />
+                  <FormattedAddress address={connectedAccountAddress} />
                   &zwj;
                   <Icon
                     className="ml-1"
                     name="square-up-right"
                   />
-                </StyledText>
+                </Box>
               ),
             },
             {
               icon: "wallet",
               label: "Wallet Balance",
-              value: `${balance} ${connectedNetwork.currency}`,
+              value: `${connectedAccountBalance} ${connectedNetwork.currency}`,
             },
             {
               icon: "file-contract",
               label: "Deposit Contract",
               value: (
-                <StyledText
+                <Box
                   as="a"
                   href={connectedNetwork.smartContractURL}
                   target="_blank"
@@ -194,7 +196,7 @@ export const BoxForNetworkDetails = () => {
                     className="ml-1"
                     name="square-up-right"
                   />
-                </StyledText>
+                </Box>
               ),
             },
             {
@@ -214,8 +216,8 @@ export const BoxForNetworkDetails = () => {
             />
 
             <div className="flex flex-col-reverse gap-1">
-              <StyledText variant="label">{label}</StyledText>
-              <StyledText variant="accentuated">{value}</StyledText>
+              <Box variant="label">{label}</Box>
+              <Box variant="accentuated">{value}</Box>
             </div>
           </div>
         ))}

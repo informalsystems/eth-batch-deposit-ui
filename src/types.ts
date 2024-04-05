@@ -1,6 +1,4 @@
 import { Dispatch } from "react"
-import Contract from "web3-eth-contract"
-import abi from "./abi.json"
 import { constants } from "./constants"
 
 export type AppAction =
@@ -34,16 +32,13 @@ export interface AppNotification {
 }
 
 export interface AppState {
-  account: string | null
-  balance: string | null
+  connectedAccountAddress: string | null
+  connectedAccountBalance: string | null
   connectedNetworkId: SupportedNetworkId | null
-  contractABI: Contract<typeof abi> | null
   isTermsAgreed: boolean
   isLoading: boolean
+  loadedFileContents: string | null
   notifications: AppNotification[]
-  sendContractData: string | null
-  transactionResponse: string | null
-  uploadedFileContents: string | null
   validatedDeposits: Partial<DepositObject>[]
 }
 

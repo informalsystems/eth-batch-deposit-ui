@@ -1,6 +1,6 @@
 import { ComponentProps, ReactNode } from "react"
 import { twMerge } from "tailwind-merge"
-import { StyledText } from "./StyledText"
+import { Box } from "./Box"
 
 export const LabeledBox = ({
   children,
@@ -15,12 +15,12 @@ export const LabeledBox = ({
   renderLabel?: (context: { renderedLabel: ReactNode }) => ReactNode
 }) => {
   const innerRenderedLabel = (
-    <StyledText
+    <Box
       as="h2"
       variant="heading3"
     >
       {label}
-    </StyledText>
+    </Box>
   )
 
   const renderedLabel =

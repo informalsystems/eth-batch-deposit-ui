@@ -1,4 +1,4 @@
-import { StyledText } from "./StyledText"
+import { Box } from "./Box"
 
 export const FormattedAddress = ({
   address,
@@ -16,11 +16,11 @@ export const FormattedAddress = ({
     : address
 
   return (
-    <StyledText
+    <Box
       as="span"
       variant="code"
     >
       {addressToPrint.replace(/^0x/, "0×")}
-    </StyledText>
+    </Box>
   )
 }

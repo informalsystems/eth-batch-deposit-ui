@@ -1,8 +1,8 @@
 import { ComponentPropsWithoutRef, MouseEvent } from "react"
 import { twJoin } from "tailwind-merge"
 import { AppNotification } from "../types"
+import { Box } from "./Box"
 import { Icon, IconName, IconVariant } from "./Icon"
-import { StyledText } from "./StyledText"
 
 export { Notification }
 
@@ -93,12 +93,12 @@ const Notification = ({
           classNamesByVariant[variant].className.iconContainer,
         )}
       >
-        <StyledText>
+        <Box>
           <Icon
             name={iconName}
             variant={iconVariant}
           />
-        </StyledText>
+        </Box>
       </div>
       <div
         className={twJoin(
@@ -106,16 +106,16 @@ const Notification = ({
           classNamesByVariant[variant].className.messageContainer,
         )}
       >
-        <StyledText>{children}</StyledText>
+        <Box>{children}</Box>
       </div>
       <div>
-        <StyledText
+        <Box
           as="button"
           className={classNamesForAllVariants.iconContainer}
           onClick={handleClickDismiss}
         >
           <Icon name="xmark" />
-        </StyledText>
+        </Box>
       </div>
     </div>
   )

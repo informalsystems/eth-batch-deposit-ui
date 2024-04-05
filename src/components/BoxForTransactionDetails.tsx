@@ -5,10 +5,10 @@ import { constants } from "../constants"
 import { useAppContext } from "../context"
 import { formatHex } from "../functions/formatHex"
 import { DepositObject } from "../types"
+import { Box } from "./Box"
 import { FormattedAddress } from "./FormattedAddress"
 import { Icon } from "./Icon"
 import { LabeledBox } from "./LabeledBox"
-import { StyledText } from "./StyledText"
 
 const { optionalJSONKeys, requiredJSONKeys } = constants
 
@@ -16,17 +16,19 @@ export const BoxForTransactionDetails = () => {
   const {
     dispatch,
     state: {
-      account,
+      connectedAccountAddress,
       connectedNetworkId,
-      uploadedFileContents,
+      loadedFileContents,
       validatedDeposits,
     },
   } = useAppContext()
 
-  // When the network, uploaded file contents, or the connected wallet
+  // When the network, loaded file contents, or the connected wallet
   // changes, re-validate the file contents
   useEffect(() => {
-    if (!(account && connectedNetworkId && uploadedFileContents)) {
+    if (
+      !(connectedAccountAddress && connectedNetworkId && loadedFileContents)
+    ) {
       return
     }
 
@@ -49,8 +51,8 @@ export const BoxForTransactionDetails = () => {
         },
       })
 
-    const validateUploadedFileContents = async () => {
-      const formattedAccount = account.replace(
+    const validateLoadedFileContents = async () => {
+      const formattedAccount = connectedAccountAddress.replace(
         /^0x1/,
         "0100000000000000000000001",
       )
@@ -59,24 +61,24 @@ export const BoxForTransactionDetails = () => {
 
       const connectedNetwork = constants.networksById[connectedNetworkId]
 
-      const uploadedDataParsedToJSON = JSON.parse(
-        uploadedFileContents,
+      const loadedDataParsedToJSON = JSON.parse(
+        loadedFileContents,
       ) as DepositObject[]
 
-      const uploadedObjectsWithValidationErrors = uploadedDataParsedToJSON.map(
-        (uploadedObject) => {
+      const loadedObjectsWithValidationErrors = loadedDataParsedToJSON.map(
+        (loadedObject) => {
           const validationErrors: string[] = []
 
-          if (typeof uploadedObject !== "object") {
+          if (typeof loadedObject !== "object") {
             validationErrors.push(
-              `Not an object. Type is "${typeof uploadedObject}"`,
+              `Not an object. Type is "${typeof loadedObject}"`,
             )
             return { validationErrors }
           }
 
           const differingPropertyNames = xor(
             allRecognizedKeys,
-            Object.keys(uploadedObject),
+            Object.keys(loadedObject),
           )
 
           differingPropertyNames.forEach((propertyName) => {
@@ -98,22 +100,22 @@ export const BoxForTransactionDetails = () => {
           // No errors so far? Then we can actually validate as if they're
           // well-formed deposit objects
           if (validationErrors.length === 0) {
-            if (!String(uploadedObject.pubkey).match(/^[0-9a-fA-F]{96}$/)) {
+            if (!String(loadedObject.pubkey).match(/^[0-9a-fA-F]{96}$/)) {
               validationErrors.push(`Pubkey is invalid`)
             }
 
             if (
-              Number(uploadedObject.amount) !== constants.requiredDepositAmount
+              Number(loadedObject.amount) !== constants.requiredDepositAmount
             ) {
               validationErrors.push(`Deposit amount is incorrect`)
             }
 
-            if (!String(uploadedObject.signature).match(/^[0-9a-fA-F]{192}$/)) {
+            if (!String(loadedObject.signature).match(/^[0-9a-fA-F]{192}$/)) {
               validationErrors.push(`Deposit signature is invalid`)
             }
 
             if (
-              !String(uploadedObject.deposit_message_root).match(
+              !String(loadedObject.deposit_message_root).match(
                 /^[0-9a-fA-F]{64}$/,
               )
             ) {
@@ -121,30 +123,28 @@ export const BoxForTransactionDetails = () => {
             }
 
             if (
-              !String(uploadedObject.deposit_data_root).match(
-                /^[0-9a-fA-F]{64}$/,
-              )
+              !String(loadedObject.deposit_data_root).match(/^[0-9a-fA-F]{64}$/)
             ) {
               validationErrors.push(`Deposit data root is invalid`)
             }
 
             if (
-              String(uploadedObject.network_name).toLowerCase() !==
+              String(loadedObject.network_name).toLowerCase() !==
               connectedNetwork.label.toLowerCase()
             ) {
               validationErrors.push(
-                `Network "${uploadedObject.network_name}" does not match connected network "${connectedNetwork.label}"`,
+                `Network "${loadedObject.network_name}" does not match connected network "${connectedNetwork.label}"`,
               )
             }
 
-            if (uploadedObject.withdrawal_credentials !== formattedAccount) {
+            if (loadedObject.withdrawal_credentials !== formattedAccount) {
               validationErrors.push(
                 `withdrawal_credentials does not match current metamask account`,
               )
             }
 
             const withdrawalCredentials = String(
-              uploadedObject.withdrawal_credentials,
+              loadedObject.withdrawal_credentials,
             )
 
             if (
@@ -155,7 +155,7 @@ export const BoxForTransactionDetails = () => {
               validationErrors.push(`withdrawal_credentials address is invalid`)
             }
 
-            if (uploadedObject.fork_version !== connectedNetwork.forkVersion) {
+            if (loadedObject.fork_version !== connectedNetwork.forkVersion) {
               validationErrors.push(
                 `fork_version does not match connected network`,
               )
@@ -163,19 +163,19 @@ export const BoxForTransactionDetails = () => {
           }
 
           return {
-            ...uploadedObject,
+            ...loadedObject,
             validationErrors,
           }
         },
       )
 
       // Any objects without errors must be well-formed deposit objects
-      const validDeposits = uploadedObjectsWithValidationErrors.filter(
+      const validDeposits = loadedObjectsWithValidationErrors.filter(
         (deposit) => deposit.validationErrors.length === 0,
       ) as DepositObject[]
 
       if (validDeposits.length === 0) {
-        setValidatedDeposits(uploadedObjectsWithValidationErrors)
+        setValidatedDeposits(loadedObjectsWithValidationErrors)
         showErrorMessage("File loaded with errors")
         return
       }
@@ -190,7 +190,7 @@ export const BoxForTransactionDetails = () => {
 
       if (!rawResponseFromFetchDeposits.ok) {
         setValidatedDeposits(
-          uploadedObjectsWithValidationErrors.map((deposit) => ({
+          loadedObjectsWithValidationErrors.map((deposit) => ({
             ...deposit,
             validationErrors: [
               ...deposit.validationErrors,
@@ -210,8 +210,8 @@ export const BoxForTransactionDetails = () => {
           formatHex(fetchedDeposit.publickey),
       )
 
-      const uploadedDepositsWithServerValidationErrors =
-        uploadedObjectsWithValidationErrors.map((deposit) => {
+      const loadedDepositsWithServerValidationErrors =
+        loadedObjectsWithValidationErrors.map((deposit) => {
           if (
             "pubkey" in deposit &&
             pubkeysInFetchedDeposits.includes(formatHex(deposit.pubkey))
@@ -222,9 +222,9 @@ export const BoxForTransactionDetails = () => {
           return deposit
         })
 
-      setValidatedDeposits(uploadedDepositsWithServerValidationErrors)
+      setValidatedDeposits(loadedDepositsWithServerValidationErrors)
 
-      const hasAnyErrors = uploadedDepositsWithServerValidationErrors.some(
+      const hasAnyErrors = loadedDepositsWithServerValidationErrors.some(
         (deposit) => deposit.validationErrors?.length >= 1,
       )
 
@@ -237,8 +237,13 @@ export const BoxForTransactionDetails = () => {
       })
     }
 
-    validateUploadedFileContents()
-  }, [account, connectedNetworkId, dispatch, uploadedFileContents])
+    validateLoadedFileContents()
+  }, [
+    connectedAccountAddress,
+    connectedNetworkId,
+    dispatch,
+    loadedFileContents,
+  ])
 
   if (!connectedNetworkId) {
     return
@@ -285,8 +290,8 @@ export const BoxForTransactionDetails = () => {
             "
             key={label}
           >
-            <StyledText variant="label">{label}</StyledText>
-            <StyledText variant="heading3">{value}</StyledText>
+            <Box variant="label">{label}</Box>
+            <Box variant="heading3">{value}</Box>
           </div>
         ))}
       </div>

@@ -3,16 +3,13 @@ import { uniqueId } from "lodash"
 import { AppAction, AppState } from "./types"
 
 const initialState: AppState = {
-  account: null,
-  balance: null,
+  connectedAccountAddress: null,
+  connectedAccountBalance: null,
   connectedNetworkId: null,
-  contractABI: null,
   isTermsAgreed: false,
   isLoading: false,
+  loadedFileContents: null,
   notifications: [],
-  sendContractData: null,
-  transactionResponse: null,
-  uploadedFileContents: null,
   validatedDeposits: [],
 }
 

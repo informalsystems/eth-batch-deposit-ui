@@ -1,10 +1,10 @@
 import { useCallback, useEffect } from "react"
 import { Web3 } from "web3"
 import { useAppContext } from "../context"
+import { Box } from "./Box"
 import { Button } from "./Button"
 import { FormattedAddress } from "./FormattedAddress"
 import { SectionContainer } from "./SectionContainer"
-import { StyledText } from "./StyledText"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ethereum = (window as any).ethereum
@@ -12,16 +12,16 @@ const ethereum = (window as any).ethereum
 export const AppHeader = () => {
   const {
     dispatch,
-    state: { account },
+    state: { connectedAccountAddress },
   } = useAppContext()
 
   const handleAccountsChanged = useCallback(
-    async (accounts: string[]) => {
-      const newAccount = accounts[0]
+    async (accountAddresses: string[]) => {
+      const newAccountAddress = accountAddresses[0]
 
       const web3 = new Web3(ethereum)
 
-      const balanceInWei = await web3.eth.getBalance(newAccount)
+      const balanceInWei = await web3.eth.getBalance(newAccountAddress)
 
       const balanceInEther = web3.utils.fromWei(balanceInWei, "ether")
 
@@ -30,8 +30,8 @@ export const AppHeader = () => {
       dispatch({
         type: "setState",
         payload: {
-          account: newAccount,
-          balance: humanReadableBalance,
+          connectedAccountAddress: newAccountAddress,
+          connectedAccountBalance: humanReadableBalance,
         },
       })
     },
@@ -67,10 +67,10 @@ export const AppHeader = () => {
   }, [handleAccountsChanged])
 
   useEffect(() => {
-    if (account) {
-      handleAccountsChanged([account])
+    if (connectedAccountAddress) {
+      handleAccountsChanged([connectedAccountAddress])
     }
-  }, [account, handleAccountsChanged])
+  }, [connectedAccountAddress, handleAccountsChanged])
 
   return (
     <header
@@ -130,7 +130,7 @@ export const AppHeader = () => {
           </nav>
 
           <div className="text-right">
-            {!account ? (
+            {!connectedAccountAddress ? (
               <Button
                 iconName="wallet"
                 onClick={handleClickConnectWallet}
@@ -139,9 +139,9 @@ export const AppHeader = () => {
               </Button>
             ) : (
               <>
-                <StyledText variant="label">Wallet Connected</StyledText>
+                <Box variant="label">Wallet Connected</Box>
                 <FormattedAddress
-                  address={account}
+                  address={connectedAccountAddress}
                   truncated={true}
                 />
               </>
@@ -151,12 +151,12 @@ export const AppHeader = () => {
 
         <div className="flex items-end justify-between">
           <div className="max-w-prose space-y-3">
-            <StyledText
+            <Box
               as="h1"
               variant="heading1"
             >
               Batch Deposit Ethereum&nbsp;Validators
-            </StyledText>
+            </Box>
 
             <p className="italic">Powered by Informal Systems</p>
           </div>
@@ -165,48 +165,26 @@ export const AppHeader = () => {
             className="
               space-y-3
               rounded-md
-              border
               border-white
+              bg-white/10
               px-8
               py-6
             "
           >
-            <StyledText
+            <Box
               as="h2"
               variant="heading2"
             >
               Welcome!
-            </StyledText>
+            </Box>
 
-            <ol
-              className="
-                space-y-3
-                pl-8
-                text-sm
-                [counter-reset:list]
-                *:relative
-                *:flex
-                *:items-center
-                *:pl-3
-                *:[counter-increment:list]
-                *:before:absolute
-                *:before:right-full
-                *:before:flex
-                *:before:size-7
-                *:before:items-center
-                *:before:justify-center
-                *:before:rounded-full
-                *:before:border
-                *:before:border-white
-                *:before:content-[counters(list,'')]
-              "
-            >
+            <Box variant="numbered-list">
               <li>Select your Network</li>
               <li>
-                Upload your&nbsp; <code>deposit_data.json</code>
+                Load your&nbsp; <code>deposit_data.json</code>
               </li>
               <li>Confirm and sign transaction</li>
-            </ol>
+            </Box>
           </div>
         </div>
       </SectionContainer>
