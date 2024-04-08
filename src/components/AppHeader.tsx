@@ -4,7 +4,6 @@ import { useAppContext } from "../context"
 import { Box } from "./Box"
 import { SectionContainer } from "./SectionContainer"
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const AppHeader = () => {
   const { dispatch } = useAppContext()
 

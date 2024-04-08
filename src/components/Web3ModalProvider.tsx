@@ -15,8 +15,8 @@ const projectId = "cdaafaceba85040db868057372657db2"
 
 // 2. Create wagmiConfig
 const metadata = {
-  name: "Web3Modal",
-  description: "Web3Modal Example",
+  name: "Batch Deposit Ethereum Validators",
+  description: "Powered by Informal Systems",
   url: "https://eth.informal.systems", // origin must match your domain & subdomain
   icons: ["https://avatars.githubusercontent.com/u/37784886"],
 }
