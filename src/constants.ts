@@ -2,7 +2,7 @@ export const constants = {
   dismissConfirmationNotificationsDelay: 5000, // milliseconds
   maximumDepositsPerFile: 100,
   networksById: {
-    "0x1": {
+    1: {
       currency: "ETH",
       depositCliVersion: "2.7.0",
       forkVersion: "00000000",
@@ -12,7 +12,7 @@ export const constants = {
       smartContractURL: `https://etherscan.io/address/0x39DC6a99209B5e6B81dC8540C86Ff10981ebDA29`,
       validationURL: "https://beaconcha.in/api/v1/validator",
     },
-    "0x4268": {
+    17000: {
       currency: "holeskyETH",
       depositCliVersion: "2.7.0",
       forkVersion: "01017000",
@@ -37,4 +37,4 @@ export const constants = {
     "signature",
     "withdrawal_credentials",
   ],
-} as const
+}

@@ -4,7 +4,7 @@ import { twJoin } from "tailwind-merge"
 import { constants } from "../constants"
 import { useAppContext } from "../context"
 import { formatHex } from "../functions/formatHex"
-import { DepositObject } from "../types"
+import { DepositObject, ValidatedDepositObject } from "../types"
 import { Box } from "./Box"
 import { FormattedAddress } from "./FormattedAddress"
 import { Icon } from "./Icon"
@@ -19,6 +19,7 @@ export const BoxForTransactionDetails = () => {
       connectedAccountAddress,
       connectedNetworkId,
       loadedFileContents,
+      previouslyDepositedPubkeys,
       validatedDeposits,
     },
   } = useAppContext()
@@ -33,7 +34,7 @@ export const BoxForTransactionDetails = () => {
     }
 
     const setValidatedDeposits = (
-      validatedDeposits: Partial<DepositObject>[],
+      validatedDeposits: ValidatedDepositObject[],
     ) =>
       dispatch({
         type: "setState",
@@ -52,14 +53,16 @@ export const BoxForTransactionDetails = () => {
       })
 
     const validateLoadedFileContents = async () => {
-      const formattedAccount = connectedAccountAddress.replace(
-        /^0x1/,
-        "0100000000000000000000001",
-      )
+      const formattedAccount = connectedAccountAddress
+        .replace(/^0x1/, "0100000000000000000000001")
+        .toLowerCase()
 
       const allRecognizedKeys = [...optionalJSONKeys, ...requiredJSONKeys]
 
-      const connectedNetwork = constants.networksById[connectedNetworkId]
+      const connectedNetwork =
+        constants.networksById[
+          connectedNetworkId as keyof typeof constants.networksById
+        ]
 
       const loadedDataParsedToJSON = JSON.parse(
         loadedFileContents,
@@ -105,6 +108,14 @@ export const BoxForTransactionDetails = () => {
             }
 
             if (
+              previouslyDepositedPubkeys.includes(
+                formatHex(loadedObject.pubkey, 96),
+              )
+            ) {
+              validationErrors.push(`Pubkey has received deposit already`)
+            }
+
+            if (
               Number(loadedObject.amount) !== constants.requiredDepositAmount
             ) {
               validationErrors.push(`Deposit amount is incorrect`)
@@ -137,20 +148,22 @@ export const BoxForTransactionDetails = () => {
               )
             }
 
-            if (loadedObject.withdrawal_credentials !== formattedAccount) {
+            const formattedWithdrawalCredentials = String(
+              loadedObject.withdrawal_credentials,
+            ).toLowerCase()
+
+            if (formattedWithdrawalCredentials !== formattedAccount) {
               validationErrors.push(
                 `withdrawal_credentials does not match current metamask account`,
               )
             }
 
-            const withdrawalCredentials = String(
-              loadedObject.withdrawal_credentials,
-            )
-
             if (
-              !withdrawalCredentials.startsWith("0100000000000000000000001") ||
-              withdrawalCredentials.length !== 64 ||
-              !withdrawalCredentials.match(/^[0-9a-fA-F]{64}$/)
+              !formattedWithdrawalCredentials.startsWith(
+                "0100000000000000000000001",
+              ) ||
+              formattedWithdrawalCredentials.length !== 64 ||
+              !formattedWithdrawalCredentials.match(/^[0-9a-fA-F]{64}$/)
             ) {
               validationErrors.push(`withdrawal_credentials address is invalid`)
             }
@@ -167,12 +180,12 @@ export const BoxForTransactionDetails = () => {
             validationErrors,
           }
         },
-      )
+      ) as ValidatedDepositObject[]
 
       // Any objects without errors must be well-formed deposit objects
       const validDeposits = loadedObjectsWithValidationErrors.filter(
         (deposit) => deposit.validationErrors.length === 0,
-      ) as DepositObject[]
+      ) as ValidatedDepositObject[]
 
       if (validDeposits.length === 0) {
         setValidatedDeposits(loadedObjectsWithValidationErrors)
@@ -196,7 +209,7 @@ export const BoxForTransactionDetails = () => {
               ...deposit.validationErrors,
               "Could not fetch deposits",
             ],
-          })),
+          })) as ValidatedDepositObject[],
         )
         showErrorMessage("Failed trying to fetch deposits")
         return
@@ -207,14 +220,15 @@ export const BoxForTransactionDetails = () => {
 
       const pubkeysInFetchedDeposits = responseFromFetchDeposits.data.map(
         (fetchedDeposit: { publickey: string }) =>
-          formatHex(fetchedDeposit.publickey),
+          formatHex(fetchedDeposit.publickey, 96),
       )
 
       const loadedDepositsWithServerValidationErrors =
         loadedObjectsWithValidationErrors.map((deposit) => {
           if (
             "pubkey" in deposit &&
-            pubkeysInFetchedDeposits.includes(formatHex(deposit.pubkey))
+            deposit.pubkey &&
+            pubkeysInFetchedDeposits.includes(formatHex(deposit.pubkey, 96))
           ) {
             deposit.validationErrors.push("Public key has existing deposit(s)")
           }
@@ -243,13 +257,17 @@ export const BoxForTransactionDetails = () => {
     connectedNetworkId,
     dispatch,
     loadedFileContents,
+    previouslyDepositedPubkeys,
   ])
 
   if (!connectedNetworkId) {
     return
   }
 
-  const connectedNetwork = constants.networksById[connectedNetworkId]
+  const connectedNetwork =
+    constants.networksById[
+      connectedNetworkId as keyof typeof constants.networksById
+    ]
 
   const includedDeposits = validatedDeposits.filter(
     (validatedDeposit) => validatedDeposit.validationErrors?.length === 0,

@@ -1,5 +1,6 @@
 import { MouseEvent, useState } from "react"
 import { twJoin } from "tailwind-merge"
+import { useConnectorClient } from "wagmi"
 import { TransactionReceipt, Web3 } from "web3"
 import abi from "../abi.json"
 import { constants } from "../constants"
@@ -12,9 +13,6 @@ import { FormattedAddress } from "./FormattedAddress"
 import { Icon } from "./Icon"
 import { LabeledBox } from "./LabeledBox"
 import { ModalWindow } from "./ModalWindow"
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ethereum = (window as any).ethereum
 
 export const BoxForTransaction = () => {
   const [isIdentityVerificationModalOpen, setIsIdentityVerificationModalOpen] =
@@ -29,16 +27,26 @@ export const BoxForTransaction = () => {
   const [transactionResult, setTransactionResult] =
     useState<Partial<TransactionReceipt> | null>(null)
 
+  const connectorClient = useConnectorClient()
+
   const {
     dispatch,
-    state: { connectedAccountAddress, connectedNetworkId, validatedDeposits },
+    state: {
+      connectedAccountAddress,
+      connectedNetworkId,
+      previouslyDepositedPubkeys,
+      validatedDeposits,
+    },
   } = useAppContext()
 
   if (!connectedNetworkId) {
     return
   }
 
-  const connectedNetwork = constants.networksById[connectedNetworkId]
+  const connectedNetwork =
+    constants.networksById[
+      connectedNetworkId as keyof typeof constants.networksById
+    ]
 
   const validDeposits = validatedDeposits.filter(
     (deposit) => deposit.validationErrors?.length === 0,
@@ -62,7 +70,7 @@ export const BoxForTransaction = () => {
       return
     }
 
-    const web3 = new Web3(ethereum)
+    const web3 = new Web3(connectorClient.data)
 
     const sig = await web3.eth.personal.sign(
       "Verify your address",
@@ -87,9 +95,12 @@ export const BoxForTransaction = () => {
       return
     }
 
-    const web3 = new Web3(ethereum)
+    const web3 = new Web3(connectorClient.data)
 
-    const { smartContractAddress } = constants.networksById[connectedNetworkId]
+    const { smartContractAddress } =
+      constants.networksById[
+        connectedNetworkId as keyof typeof constants.networksById
+      ]
 
     try {
       const contractABI = new web3.eth.Contract(abi, smartContractAddress)
@@ -116,18 +127,18 @@ export const BoxForTransaction = () => {
       }>(
         (acc, deposit) => {
           return {
-            allPubkeys: [...acc.allPubkeys, formatHex(deposit.pubkey!)],
+            allPubkeys: [...acc.allPubkeys, formatHex(deposit.pubkey!, 96)],
             allWithdrawalCredentials: [
               ...acc.allWithdrawalCredentials,
-              formatHex(deposit.withdrawal_credentials!),
+              formatHex(deposit.withdrawal_credentials!, 96),
             ],
             allSignatures: [
               ...acc.allSignatures,
-              formatHex(deposit.signature!),
+              formatHex(deposit.signature!, 192),
             ],
             allDepositDataRoots: [
               ...acc.allDepositDataRoots,
-              formatHex(deposit.deposit_data_root!),
+              formatHex(deposit.deposit_data_root!, 64),
             ],
           }
         },
@@ -155,7 +166,21 @@ export const BoxForTransaction = () => {
         }
 
         try {
+          dispatch({
+            type: "setState",
+            payload: {
+              loadingMessage: "Processing Transaction...",
+            },
+          })
+
           const response = await web3.eth.sendTransaction(transactionParameters)
+
+          dispatch({
+            type: "setState",
+            payload: {
+              loadingMessage: null,
+            },
+          })
 
           setIsTransactionDetailsModalOpen(false)
           setIsTransactionResultModalOpen(true)
@@ -163,6 +188,15 @@ export const BoxForTransaction = () => {
             blockHash: cleanHex(`${response.blockHash}`, 66),
             blockNumber: `${response.blockNumber}`.replace(/[^0-9]/g, ""),
             transactionHash: cleanHex(`${response.transactionHash}`, 66),
+          })
+          dispatch({
+            type: "setState",
+            payload: {
+              previouslyDepositedPubkeys: [
+                ...previouslyDepositedPubkeys,
+                ...allPubkeys,
+              ],
+            },
           })
         } catch (error) {
           showErrorMessage(`Error executing transaction: ${error}`)

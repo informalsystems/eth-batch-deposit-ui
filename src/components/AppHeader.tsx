@@ -1,76 +1,53 @@
-import { useCallback, useEffect } from "react"
-import { Web3 } from "web3"
+import { useEffect } from "react"
+import { useAccount, useBalance, useChainId } from "wagmi"
 import { useAppContext } from "../context"
 import { Box } from "./Box"
-import { Button } from "./Button"
-import { FormattedAddress } from "./FormattedAddress"
 import { SectionContainer } from "./SectionContainer"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ethereum = (window as any).ethereum
-
 export const AppHeader = () => {
-  const {
-    dispatch,
-    state: { connectedAccountAddress },
-  } = useAppContext()
+  const { dispatch } = useAppContext()
 
-  const handleAccountsChanged = useCallback(
-    async (accountAddresses: string[]) => {
-      const newAccountAddress = accountAddresses[0]
+  const { address } = useAccount()
 
-      const web3 = new Web3(ethereum)
+  const balance = useBalance({
+    address,
+  })
 
-      const balanceInWei = await web3.eth.getBalance(newAccountAddress)
-
-      const balanceInEther = web3.utils.fromWei(balanceInWei, "ether")
-
-      const humanReadableBalance = parseFloat(balanceInEther).toFixed(2)
-
-      dispatch({
-        type: "setState",
-        payload: {
-          connectedAccountAddress: newAccountAddress,
-          connectedAccountBalance: humanReadableBalance,
-        },
-      })
-    },
-    [dispatch],
-  )
-
-  const handleClickConnectWallet = async () => {
-    if (!ethereum) {
-      dispatch({
-        type: "showNotification",
-        payload: {
-          type: "error",
-          message: "Please download metamask",
-        },
-      })
-      return
-    }
-
-    // Get permission to call eth_accounts
-    await ethereum.request({
-      method: "eth_requestAccounts",
-    })
-
-    const accounts = await ethereum.request({
-      method: "eth_accounts",
-    })
-
-    handleAccountsChanged(accounts)
-  }
+  const chainId = useChainId()
 
   useEffect(() => {
-    ethereum.on("accountsChanged", handleAccountsChanged)
-  }, [handleAccountsChanged])
+    dispatch({
+      type: "setState",
+      payload: {
+        connectedAccountAddress: address ? String(address).toLowerCase() : null,
+      },
+    })
+  }, [address, dispatch])
 
   useEffect(() => {
-    if (connectedAccountAddress) {
-      handleAccountsChanged([connectedAccountAddress])
-    }
-  }, [connectedAccountAddress, handleAccountsChanged])
+    const balanceValue = Number(balance.data?.value ?? 0)
+    const balanceNumDecimals = balance.data?.decimals ?? 0
+
+    dispatch({
+      type: "setState",
+      payload: {
+        connectedAccountBalance: (
+          balanceValue /
+          10 ** balanceNumDecimals
+        ).toFixed(4),
+      },
+    })
+  }, [balance, dispatch])
+
+  useEffect(() => {
+    dispatch({
+      type: "setState",
+      payload: {
+        connectedNetworkId: chainId,
+      },
+    })
+  }, [chainId, dispatch])
 
   return (
     <header
@@ -130,22 +107,7 @@ export const AppHeader = () => {
           </nav>
 
           <div className="text-right">
-            {!connectedAccountAddress ? (
-              <Button
-                iconName="wallet"
-                onClick={handleClickConnectWallet}
-              >
-                Connect Wallet
-              </Button>
-            ) : (
-              <>
-                <Box variant="label">Wallet Connected</Box>
-                <FormattedAddress
-                  address={connectedAccountAddress}
-                  truncated={true}
-                />
-              </>
-            )}
+            <w3m-button />
           </div>
         </div>
 

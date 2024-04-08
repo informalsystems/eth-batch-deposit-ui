@@ -1,19 +1,15 @@
-import { MouseEvent, useEffect } from "react"
+import { MouseEvent } from "react"
+import { useSwitchChain } from "wagmi"
 import { constants } from "../constants"
 import { useAppContext } from "../context"
-import { SupportedNetworkId } from "../types"
 import { Box } from "./Box"
 import { Button } from "./Button"
 import { FormattedAddress } from "./FormattedAddress"
 import { Icon } from "./Icon"
 import { LabeledBox } from "./LabeledBox"
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ethereum = (window as any).ethereum
-
 export const BoxForNetworkDetails = () => {
   const {
-    dispatch,
     state: {
       connectedAccountAddress,
       connectedAccountBalance,
@@ -21,70 +17,24 @@ export const BoxForNetworkDetails = () => {
     },
   } = useAppContext()
 
+  const { switchChain } = useSwitchChain()
+
   const isFullyConnected = !!connectedAccountAddress && !!connectedNetworkId
 
-  const connectedNetwork = isFullyConnected
-    ? constants.networksById[connectedNetworkId]
-    : null
-
-  useEffect(() => {
-    const showErrorMessage = (message: string) =>
-      dispatch({
-        type: "showNotification",
-        payload: {
-          type: "error",
-          message,
-        },
-      })
-
-    const handleChainChanged = (networkId: SupportedNetworkId) => {
-      // Wipe out any state that was based on the network
-      dispatch({
-        type: "setState",
-        payload: {
-          notifications: [],
-          connectedNetworkId: networkId,
-        },
-      })
-
-      if (!(networkId in constants.networksById)) {
-        showErrorMessage(`Unrecognized network`)
-      }
-    }
-
-    const queryChainId = async () => {
-      const networkId = await ethereum.request({
-        method: "eth_chainId",
-      })
-
-      handleChainChanged(networkId)
-    }
-
-    queryChainId()
-
-    ethereum.on("chainChanged", handleChainChanged)
-  }, [dispatch])
+  const connectedNetwork =
+    isFullyConnected && connectedNetworkId in constants.networksById
+      ? constants.networksById[
+          connectedNetworkId as keyof typeof constants.networksById
+        ]
+      : null
 
   const handleClickSelectNetwork = async (
-    { networkId }: { networkId: string },
+    { networkId }: { networkId: number },
     event: MouseEvent<HTMLButtonElement>,
   ) => {
     event.preventDefault()
 
-    try {
-      await ethereum.request({
-        method: "wallet_switchEthereumChain",
-        params: [{ chainId: networkId }],
-      })
-    } catch (error) {
-      dispatch({
-        type: "showNotification",
-        payload: {
-          message: String(error) ?? "Unknown error",
-          type: "error",
-        },
-      })
-    }
+    switchChain({ chainId: networkId })
   }
 
   return (
@@ -117,16 +67,18 @@ export const BoxForNetworkDetails = () => {
               "
             >
               {Object.entries(constants.networksById).map(([id, { label }]) => {
-                const isActive = connectedNetworkId === id
+                const idAsNumber = Number(id)
+
+                const isActive = connectedNetworkId === idAsNumber
 
                 return (
-                  <li key={id}>
+                  <li key={idAsNumber}>
                     <Button
                       iconName="hexagon"
                       isActive={isActive}
                       size="small"
                       onClick={handleClickSelectNetwork.bind(null, {
-                        networkId: id,
+                        networkId: idAsNumber,
                       })}
                     >
                       {!isActive && "Switch to "} {label}

@@ -7,9 +7,10 @@ const initialState: AppState = {
   connectedAccountBalance: null,
   connectedNetworkId: null,
   isTermsAgreed: false,
-  isLoading: false,
   loadedFileContents: null,
+  loadingMessage: null,
   notifications: [],
+  previouslyDepositedPubkeys: [],
   validatedDeposits: [],
 }
 

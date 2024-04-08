@@ -34,12 +34,13 @@ export interface AppNotification {
 export interface AppState {
   connectedAccountAddress: string | null
   connectedAccountBalance: string | null
-  connectedNetworkId: SupportedNetworkId | null
+  connectedNetworkId: number | null
   isTermsAgreed: boolean
-  isLoading: boolean
   loadedFileContents: string | null
+  loadingMessage: string | null
   notifications: AppNotification[]
-  validatedDeposits: Partial<DepositObject>[]
+  previouslyDepositedPubkeys: string[]
+  validatedDeposits: ValidatedDepositObject[]
 }
 
 type OptionalDepositKeys = (typeof constants.optionalJSONKeys)[number]
@@ -49,8 +50,8 @@ export type DepositObject = {
   [K in RequiredDepositKeys]: string | number
 } & {
   [K in OptionalDepositKeys]?: string | number
-} & {
-  validationErrors?: string[]
 }
 
-export type SupportedNetworkId = keyof typeof constants.networksById
+export type ValidatedDepositObject = Partial<DepositObject> & {
+  validationErrors: string[]
+}

@@ -3,9 +3,11 @@ import { BoxForLoadYourFile } from "./components/BoxForLoadYourFile"
 import { BoxForNetworkDetails } from "./components/BoxForNetworkDetails"
 import { BoxForTransaction } from "./components/BoxForTransaction"
 import { BoxForTransactionDetails } from "./components/BoxForTransactionDetails"
+import { LoadingScreen } from "./components/LoadingScreen"
 import { ModalWindowForTerms } from "./components/ModalWindowForTerms"
 import { Notifications } from "./components/Notifications"
 import { SectionContainer } from "./components/SectionContainer"
+import { Web3ModalProvider } from "./components/Web3ModalProvider"
 import { AppContext } from "./context"
 import { useReducerWithPersistedStateKeys } from "./hooks/useReducerWithPersistedStateKeys"
 import { AppReducer, initialState } from "./reducer"
@@ -14,7 +16,11 @@ function App() {
   const [state, dispatch] = useReducerWithPersistedStateKeys({
     initialState,
     localStorageKeyName: "saved-state",
-    persistedKeys: ["connectedAccountAddress", "isTermsAgreed"],
+    persistedKeys: [
+      "connectedAccountAddress",
+      "isTermsAgreed",
+      "previouslyDepositedPubkeys",
+    ],
     reducer: AppReducer,
   })
 
@@ -25,32 +31,36 @@ function App() {
         state,
       }}
     >
-      <Notifications />
+      <Web3ModalProvider>
+        <LoadingScreen />
 
-      <ModalWindowForTerms />
+        <Notifications />
 
-      <main className="space-y-6 pb-12">
-        <AppHeader />
+        <ModalWindowForTerms />
 
-        <SectionContainer
-          className="
-            grid
-            grid-cols-[2fr_1fr_1fr]
-            items-stretch
-            gap-6
-          "
-        >
-          <BoxForNetworkDetails />
+        <main className="space-y-6 pb-12">
+          <AppHeader />
 
-          <BoxForLoadYourFile />
+          <SectionContainer
+            className="
+              grid
+              grid-cols-[2fr_1fr_1fr]
+              items-stretch
+              gap-6
+            "
+          >
+            <BoxForNetworkDetails />
 
-          <BoxForTransaction />
-        </SectionContainer>
+            <BoxForLoadYourFile />
 
-        <SectionContainer>
-          <BoxForTransactionDetails />
-        </SectionContainer>
-      </main>
+            <BoxForTransaction />
+          </SectionContainer>
+
+          <SectionContainer>
+            <BoxForTransactionDetails />
+          </SectionContainer>
+        </main>
+      </Web3ModalProvider>
     </AppContext.Provider>
   )
 }

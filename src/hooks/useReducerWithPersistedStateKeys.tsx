@@ -26,17 +26,10 @@ export const useReducerWithPersistedStateKeys = <T, A>({
   })
 
   useEffect(() => {
-    const rawSavedState = window.localStorage.getItem(localStorageKeyName)
-
-    const savedState = rawSavedState ? JSON.parse(rawSavedState) : {}
-
-    const updatedSavedState = {
-      ...savedState,
-      ...pick(state, persistedKeys),
-    }
+    const updatedSavedState = pick(state, persistedKeys)
 
     window.localStorage.setItem(
-      "saved-state",
+      localStorageKeyName,
       JSON.stringify(updatedSavedState),
     )
   }, [localStorageKeyName, persistedKeys, state])
