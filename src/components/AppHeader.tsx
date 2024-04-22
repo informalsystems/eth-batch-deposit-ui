@@ -1,6 +1,7 @@
 import { useEffect } from "react"
 import { useAccount, useBalance, useChainId } from "wagmi"
 import { useAppContext } from "../context"
+import { cleanHex } from "../functions/cleanHex"
 import { Box } from "./Box"
 import { SectionContainer } from "./SectionContainer"
 
@@ -19,7 +20,7 @@ export const AppHeader = () => {
     dispatch({
       type: "setState",
       payload: {
-        connectedAccountAddress: address ? String(address).toLowerCase() : null,
+        connectedAccountAddress: address ? cleanHex(address, 42) : null,
       },
     })
   }, [address, dispatch])
