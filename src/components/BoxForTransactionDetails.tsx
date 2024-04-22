@@ -54,7 +54,7 @@ export const BoxForTransactionDetails = () => {
 
     const validateLoadedFileContents = async () => {
       const formattedAccount = connectedAccountAddress
-        .replace(/^0x1/, "0100000000000000000000001")
+        .replace(/^0x/, "010000000000000000000000")
         .toLowerCase()
 
       const allRecognizedKeys = [...optionalJSONKeys, ...requiredJSONKeys]
