@@ -52,7 +52,7 @@ export const BoxForTransaction = () => {
     (deposit) => deposit.validationErrors?.length === 0,
   )
 
-  const canSendTransaction = validDeposits.length >= 1
+  const canSendTransaction = validDeposits.length === validatedDeposits.length
 
   const showErrorMessage = (message: string) =>
     dispatch({
