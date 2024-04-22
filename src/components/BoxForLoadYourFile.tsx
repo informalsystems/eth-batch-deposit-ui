@@ -54,26 +54,30 @@ export const BoxForLoadYourFile = () => {
     reader.onload = async (event) => {
       const rawJSON = String(event.target?.result ?? "[]")
 
-      const loadedDataParsedToJSON = JSON.parse(rawJSON) as object | unknown[]
+      try {
+        const loadedDataParsedToJSON = JSON.parse(rawJSON) as object | unknown[]
 
-      if (!Array.isArray(loadedDataParsedToJSON)) {
-        showErrorMessage("File is not an array of objects")
-        return
+        if (!Array.isArray(loadedDataParsedToJSON)) {
+          showErrorMessage("File is not an array of objects")
+          return
+        }
+
+        if (loadedDataParsedToJSON.length >= constants.maximumDepositsPerFile) {
+          showErrorMessage(
+            `Number of objects in loaded file exceeds limit of ${constants.maximumDepositsPerFile}`,
+          )
+          return
+        }
+
+        dispatch({
+          type: "setState",
+          payload: {
+            loadedFileContents: rawJSON,
+          },
+        })
+      } catch (error) {
+        showErrorMessage(`Failed parsing file as JSON: ${error}`)
       }
-
-      if (loadedDataParsedToJSON.length >= constants.maximumDepositsPerFile) {
-        showErrorMessage(
-          `Number of objects in loaded file exceeds limit of ${constants.maximumDepositsPerFile}`,
-        )
-        return
-      }
-
-      dispatch({
-        type: "setState",
-        payload: {
-          loadedFileContents: rawJSON,
-        },
-      })
     }
 
     reader.readAsText(file)
