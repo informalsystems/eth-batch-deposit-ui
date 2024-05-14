@@ -85,10 +85,19 @@ export const AppHeader = () => {
               "
             >
               {[
-                { href: "#", label: "informal systems" },
-                { href: "#", label: "rewards dashboard" },
-                { href: "#", label: "stake with us" },
-                { href: "#", label: "batch deposit" },
+                { href: "https://informal.systems", label: "informal systems" },
+                {
+                  href: "https://eth.informal.systems/rewards",
+                  label: "rewards dashboard",
+                },
+                {
+                  href: "https://informal.systems/staking",
+                  label: "stake with us",
+                },
+                {
+                  href: "https://eth.informal.systems/batch-deposit",
+                  label: "batch deposit",
+                },
               ].map(({ href, label }) => (
                 <li key={label}>
                   <a
