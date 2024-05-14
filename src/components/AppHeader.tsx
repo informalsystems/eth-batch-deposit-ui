@@ -74,7 +74,7 @@ export const AppHeader = () => {
           <img
             className="size-16"
             alt="logo"
-            src="/images/logo.png"
+            src="/batch-deposit/images/logo.png"
           />
 
           <nav>

@@ -48,7 +48,7 @@ export const ModalWindowForTerms = () => {
           href="https://informal.systems"
         >
           <img
-            src="/images/logo.png"
+            src="/batch-deposit/images/logo.png"
             alt="Logo"
             className="logo img-center w-16"
           />
