@@ -82,9 +82,25 @@ export const BoxForTransaction = () => {
       .recover("Verify your address", sig)
       .toLowerCase()
 
-    if (result === connectedAccountAddress) {
+    if (result === connectedAccountAddress.toLowerCase()) {
       setIsIdentityVerificationModalOpen(false)
       setIsTransactionDetailsModalOpen(true)
+    } else {
+      console.error(
+        "Account verification failed! ",
+        result,
+        connectedAccountAddress,
+      )
+      const showErrorMessage = (message: string) =>
+        dispatch({
+          type: "showNotification",
+          payload: {
+            type: "error",
+            message,
+          },
+        })
+      setIsIdentityVerificationModalOpen(false)
+      showErrorMessage("Account verification failed!")
     }
   }
 

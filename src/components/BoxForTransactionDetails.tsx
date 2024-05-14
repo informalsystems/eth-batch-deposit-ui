@@ -218,17 +218,18 @@ export const BoxForTransactionDetails = () => {
       const responseFromFetchDeposits =
         (await rawResponseFromFetchDeposits.json()) ?? {}
 
+      // pubkey needs to be maxLength 98 with 0x
       const pubkeysInFetchedDeposits = responseFromFetchDeposits.data.map(
         (fetchedDeposit: { publickey: string }) =>
-          formatHex(fetchedDeposit.publickey, 96),
+          formatHex(fetchedDeposit.publickey, 98),
       )
-
+      console.log(pubkeysInFetchedDeposits)
       const loadedDepositsWithServerValidationErrors =
         loadedObjectsWithValidationErrors.map((deposit) => {
           if (
             "pubkey" in deposit &&
             deposit.pubkey &&
-            pubkeysInFetchedDeposits.includes(formatHex(deposit.pubkey, 96))
+            pubkeysInFetchedDeposits.includes(formatHex(deposit.pubkey, 98))
           ) {
             deposit.validationErrors.push("Public key has existing deposit(s)")
           }
