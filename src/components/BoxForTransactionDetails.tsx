@@ -153,14 +153,22 @@ export const BoxForTransactionDetails = () => {
             ).toLowerCase()
 
             if (formattedWithdrawalCredentials !== formattedAccount) {
-              validationErrors.push(
-                `withdrawal_credentials does not match current metamask account`,
+              const showErrorMessage = (message: string) =>
+                dispatch({
+                  type: "showNotification",
+                  payload: {
+                    type: "error",
+                    message,
+                  },
+                })
+              showErrorMessage(
+                "Withdrawal credentials do not match connected wallet. Proceed with caution!",
               )
             }
-
+            console.log(formattedWithdrawalCredentials)
             if (
               !formattedWithdrawalCredentials.startsWith(
-                "0100000000000000000000001",
+                "010000000000000000000000",
               ) ||
               formattedWithdrawalCredentials.length !== 64 ||
               !formattedWithdrawalCredentials.match(/^[0-9a-fA-F]{64}$/)
