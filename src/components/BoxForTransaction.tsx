@@ -208,6 +208,8 @@ export const BoxForTransaction = () => {
           dispatch({
             type: "setState",
             payload: {
+              loadedFileContents: null,
+              validatedDeposits: [],
               previouslyDepositedPubkeys: [
                 ...previouslyDepositedPubkeys,
                 ...allPubkeys,
