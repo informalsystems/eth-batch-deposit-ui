@@ -66,12 +66,6 @@ export const ModalWindowForTerms = () => {
         "
       >
         <p>
-          This is for authorized testing purposes only, do not use this website!
-        </p>
-
-        <p>Formatted for desktop use only&hellip;</p>
-
-        <p>
           Your use of the services and deposit(s) anticipated by this agreement
           will require that you scrupulously follow certain instructions (the
           &ldquo;instructions&rdquo;). You agree that at all times you will
@@ -98,6 +92,13 @@ export const ModalWindowForTerms = () => {
           from the UI or the Services any Prohibited Content.
         </p>
         <p>
+          All users whether provided with explicit instructions or not assumes
+          all risks associated with the use of this application. By agreeing to
+          these terms and conditions, the user acknowledges that Informal
+          Systems/Cephalopod Equipment shall not be held liable for any losses
+          or damages incurred.
+        </p>
+        <p>
           THIS AGREEMENT, THE UI AND THE SERVICE IS PROVIDED &ldquo;AS IS&rdquo;
           WITHOUT ANY CONDITION OR WARRANTY WHATSOEVER. YOUR ENTERING THIS
           CONTRACT, USE OF THE UI AND THE SERVICE IS ENTIRELY AT YOUR OWN RISK.
@@ -107,6 +108,7 @@ export const ModalWindowForTerms = () => {
           SHOULD YOU FAIL TO ADHERE TO YOUR OBLIGATIONS OR IN ANY OTHER WAY BE
           IN BREACH OF THIS AGREEMENT.
         </p>
+        <p>Formatted for desktop use only&hellip;</p>
       </div>
 
       <div
