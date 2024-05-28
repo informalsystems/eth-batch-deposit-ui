@@ -20,7 +20,7 @@ export const AppFooter = () => {
           className="float-left w-6 opacity-70"
         />
       </a>
-      <span className=" ml-2 text-xs leading-8 text-brandColor">
+      <span className="text-dimgrey ml-2 text-xs leading-8">
         &copy; {currentYear}
         <a
           href="https://informal.systems"
