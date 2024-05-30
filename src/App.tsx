@@ -3,6 +3,7 @@ import { BoxForLoadYourFile } from "./components/BoxForLoadYourFile"
 import { BoxForNetworkDetails } from "./components/BoxForNetworkDetails"
 import { BoxForTransaction } from "./components/BoxForTransaction"
 import { BoxForTransactionDetails } from "./components/BoxForTransactionDetails"
+import { AppFooter } from "./components/AppFooter"
 import { LoadingScreen } from "./components/LoadingScreen"
 import { ModalWindowForTerms } from "./components/ModalWindowForTerms"
 import { Notifications } from "./components/Notifications"
@@ -59,6 +60,7 @@ function App() {
           <SectionContainer>
             <BoxForTransactionDetails />
           </SectionContainer>
+          <AppFooter />
         </main>
       </Web3ModalProvider>
     </AppContext.Provider>
