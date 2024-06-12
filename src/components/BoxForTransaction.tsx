@@ -15,9 +15,6 @@ import { LabeledBox } from "./LabeledBox"
 import { ModalWindow } from "./ModalWindow"
 
 export const BoxForTransaction = () => {
-  const [isIdentityVerificationModalOpen, setIsIdentityVerificationModalOpen] =
-    useState(false)
-
   const [isTransactionDetailsModalOpen, setIsTransactionDetailsModalOpen] =
     useState(false)
 
@@ -62,47 +59,6 @@ export const BoxForTransaction = () => {
         message,
       },
     })
-
-  const handleClickVerifyIdentity = async (event: MouseEvent) => {
-    event.preventDefault()
-
-    if (!connectedAccountAddress) {
-      return
-    }
-
-    const web3 = new Web3(connectorClient.data)
-
-    const sig = await web3.eth.personal.sign(
-      "Verify your address",
-      connectedAccountAddress,
-      "",
-    )
-
-    const result = web3.eth.accounts
-      .recover("Verify your address", sig)
-      .toLowerCase()
-
-    if (result === connectedAccountAddress.toLowerCase()) {
-      setIsIdentityVerificationModalOpen(false)
-      setIsTransactionDetailsModalOpen(true)
-    } else {
-      console.error(
-        "Account verification failed! ",
-        result,
-        connectedAccountAddress,
-      )
-      const showErrorMessage = (message: string) =>
-        dispatch({
-          type: "showNotification",
-          payload: {
-            type: "error",
-            message,
-          },
-        })
-      setIsIdentityVerificationModalOpen(false)
-      showErrorMessage("Account verification failed!")
-    }
-  }
 
   const handleClickExecuteTransaction = async (event: MouseEvent) => {
     event.preventDefault()
@@ -217,12 +173,21 @@ export const BoxForTransaction = () => {
             },
           })
         } catch (error) {
+          dispatch({
+            type: "setState",
+            payload: {
+              loadingMessage: null,
+            },
+          })
+          setIsTransactionDetailsModalOpen(false)
           showErrorMessage(`Error executing transaction: ${error}`)
         }
       } catch (error) {
+        setIsTransactionDetailsModalOpen(false)
         showErrorMessage(`Error encoding ABI: ${error}`)
       }
     } catch (error) {
+      setIsTransactionDetailsModalOpen(false)
       showErrorMessage(`Error initializing contract instance: ${error}`)
     }
   }
@@ -256,18 +221,10 @@ export const BoxForTransaction = () => {
         <Button
           disabled={!canSendTransaction}
           variant="primary"
-          onClick={() => setIsIdentityVerificationModalOpen(true)}
+          onClick={() => setIsTransactionDetailsModalOpen(true)}
         >
           Sign Transaction
         </Button>
-
-        <ModalWindow
-          isOpen={isIdentityVerificationModalOpen}
-          onClose={() => setIsIdentityVerificationModalOpen(false)}
-        >
-          Click below to verify your identity:
-          <Button onClick={handleClickVerifyIdentity}>Verify Identity</Button>
-        </ModalWindow>
 
         <ModalWindow
           isOpen={isTransactionDetailsModalOpen}
