@@ -28,6 +28,14 @@ const faqs: FAQItem[] = [
       "Depending on the validator queue it can take 1-7+ days but most occur in 24 hours. \
 	  More information about the deposit process can be found here: https://kb.beaconcha.in/ethereum-staking/deposit-process.",
   },
+  {
+    question:
+      "I am getting an error that says withdrawal credentials don't match my connected account, what is this?",
+    answer:
+      "This means that the validators you are depositing your ETH to are only able to to be controlled by the withdrawal credentials \
+      and to make sure you have control over this address. The withdrawal credentials are the wallet that will receive all ETH staking rewards \
+      and when the validator is unbonded, the 32 ETH deposited will be returned to the withdrawal credentials.",
+  },
 ]
 
 export const AppFaq = () => {

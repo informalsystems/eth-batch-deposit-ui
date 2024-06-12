@@ -161,11 +161,13 @@ export const BoxForTransactionDetails = () => {
                     message,
                   },
                 })
+
               showErrorMessage(
-                "Withdrawal credentials do not match connected wallet. Proceed with caution!",
+                "Withdrawal credentials do not match connected wallet. Proceed with caution! withdrawal_credentials: " +
+                  formattedWithdrawalCredentials.slice(24),
               )
             }
-            console.log(formattedWithdrawalCredentials)
+
             if (
               !formattedWithdrawalCredentials.startsWith(
                 "010000000000000000000000",
@@ -231,7 +233,7 @@ export const BoxForTransactionDetails = () => {
         (fetchedDeposit: { publickey: string }) =>
           formatHex(fetchedDeposit.publickey, 98),
       )
-      console.log(pubkeysInFetchedDeposits)
+
       const loadedDepositsWithServerValidationErrors =
         loadedObjectsWithValidationErrors.map((deposit) => {
           if (
