@@ -123,10 +123,12 @@ export const BoxForTransaction = () => {
       )
 
       try {
+        const defaultGas: bigint = BigInt(100000)
         const transactionParameters = {
           from: connectedAccountAddress!,
           to: smartContractAddress,
           value: totalAmountInWei,
+          gas: defaultGas,
           data: contractABI.methods
             .batchDeposit(
               allPubkeys,
@@ -138,49 +140,93 @@ export const BoxForTransaction = () => {
         }
 
         try {
-          dispatch({
-            type: "setState",
-            payload: {
-              loadingMessage: "Processing Transaction...",
-            },
-          })
+          await web3.eth
+            .estimateGas(transactionParameters)
+            .then(function (gasEstimate) {
+              transactionParameters.gas = gasEstimate
+            })
 
-          const response = await web3.eth.sendTransaction(transactionParameters)
+          try {
+            dispatch({
+              type: "setState",
+              payload: {
+                loadingMessage: "Processing Transaction...",
+              },
+            })
 
-          dispatch({
-            type: "setState",
-            payload: {
-              loadingMessage: null,
-            },
-          })
+            const response = await web3.eth.sendTransaction(
+              transactionParameters,
+            )
 
-          setIsTransactionDetailsModalOpen(false)
-          setIsTransactionResultModalOpen(true)
-          setTransactionResult({
-            blockHash: cleanHex(`${response.blockHash}`, 66),
-            blockNumber: `${response.blockNumber}`.replace(/[^0-9]/g, ""),
-            transactionHash: cleanHex(`${response.transactionHash}`, 66),
-          })
-          dispatch({
-            type: "setState",
-            payload: {
-              loadedFileContents: null,
-              validatedDeposits: [],
-              previouslyDepositedPubkeys: [
-                ...previouslyDepositedPubkeys,
-                ...allPubkeys,
-              ],
-            },
-          })
+            dispatch({
+              type: "setState",
+              payload: {
+                loadingMessage: null,
+              },
+            })
+
+            setIsTransactionDetailsModalOpen(false)
+            setIsTransactionResultModalOpen(true)
+            setTransactionResult({
+              blockHash: cleanHex(`${response.blockHash}`, 66),
+              blockNumber: `${response.blockNumber}`.replace(/[^0-9]/g, ""),
+              transactionHash: cleanHex(`${response.transactionHash}`, 66),
+            })
+            dispatch({
+              type: "setState",
+              payload: {
+                loadedFileContents: null,
+                validatedDeposits: [],
+                previouslyDepositedPubkeys: [
+                  ...previouslyDepositedPubkeys,
+                  ...allPubkeys,
+                ],
+              },
+            })
+          } catch (error) {
+            dispatch({
+              type: "setState",
+              payload: {
+                loadingMessage: null,
+              },
+            })
+            setIsTransactionDetailsModalOpen(false)
+            const serializedError = JSON.stringify(error)
+            const deserializedError = JSON.parse(serializedError)
+            console.log("send tx test:", deserializedError)
+            console.log(error)
+            if (deserializedError !== null) {
+              if (deserializedError.cause.data.message) {
+                showErrorMessage(
+                  `Error executing transaction 0: ${deserializedError.cause.data.message}`,
+                )
+              } else if (deserializedError.message) {
+                showErrorMessage(
+                  `Error executing transaction 1: ${deserializedError.message}`,
+                )
+              } else {
+                showErrorMessage(`Error executing transaction 2: ${error}`)
+              }
+            }
+          }
         } catch (error) {
-          dispatch({
-            type: "setState",
-            payload: {
-              loadingMessage: null,
-            },
-          })
           setIsTransactionDetailsModalOpen(false)
-          showErrorMessage(`Error executing transaction: ${error}`)
+          const serializedError = JSON.stringify(error)
+          const deserializedError = JSON.parse(serializedError)
+          console.log(error)
+          if (deserializedError !== null) {
+            if (deserializedError.cause.data.message) {
+              showErrorMessage(
+                `Estimate gas error 0: ${deserializedError.cause.data.message}`,
+              )
+            } else if (deserializedError.message) {
+              showErrorMessage(
+                `Estimate gas error 1: ${deserializedError.message}`,
+              )
+            } else {
+              showErrorMessage(`Estimate gas error 3: ${error}`)
+            }
+          }
         }
       } catch (error) {
         setIsTransactionDetailsModalOpen(false)
