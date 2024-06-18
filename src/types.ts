@@ -41,6 +41,7 @@ export interface AppState {
   notifications: AppNotification[]
   previouslyDepositedPubkeys: string[]
   validatedDeposits: ValidatedDepositObject[]
+  withdrawalCredentials: string | null
 }
 
 type OptionalDepositKeys = (typeof constants.optionalJSONKeys)[number]

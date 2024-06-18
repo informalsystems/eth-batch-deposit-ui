@@ -40,6 +40,9 @@ export const BoxForTransactionDetails = () => {
         type: "setState",
         payload: {
           validatedDeposits,
+          withdrawalCredentials: String(
+            validatedDeposits[0].withdrawal_credentials,
+          )?.replace(/^010000000000000000000000/, "0x"),
         },
       })
 

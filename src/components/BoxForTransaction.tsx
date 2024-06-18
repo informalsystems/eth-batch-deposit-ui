@@ -33,6 +33,7 @@ export const BoxForTransaction = () => {
       connectedNetworkId,
       previouslyDepositedPubkeys,
       validatedDeposits,
+      withdrawalCredentials,
     },
   } = useAppContext()
 
@@ -49,7 +50,9 @@ export const BoxForTransaction = () => {
     (deposit) => deposit.validationErrors?.length === 0,
   )
 
-  const canSendTransaction = validDeposits.length === validatedDeposits.length
+  const canSendTransaction =
+    validDeposits.length === validatedDeposits.length &&
+    validatedDeposits.length !== 0
 
   const showErrorMessage = (message: string) =>
     dispatch({
@@ -276,7 +279,29 @@ export const BoxForTransaction = () => {
           isOpen={isTransactionDetailsModalOpen}
           onClose={() => setIsTransactionDetailsModalOpen(false)}
         >
-          All set?
+          {connectedAccountAddress !== withdrawalCredentials && (
+            <>
+              <span className="font-bold">
+                Please make sure you have control of both addresses listed
+                below:
+              </span>
+              <a
+                href={`${connectedNetwork.pubkeyBeaconchainURL}/address/${connectedAccountAddress}`}
+                target="_blank"
+                className="transition duration-300 hover:opacity-50"
+              >
+                Connected Account: {connectedAccountAddress}
+              </a>
+              <a
+                href={`${connectedNetwork.pubkeyBeaconchainURL}/address/${withdrawalCredentials}`}
+                target="_blank"
+                className="transition duration-300 hover:opacity-50"
+              >
+                Withdrawal Credentials: {withdrawalCredentials}
+              </a>
+            </>
+          )}
+          <span className="font-bold">All set?</span>
           <Button onClick={handleClickExecuteTransaction}>
             Execute Transaction
           </Button>
