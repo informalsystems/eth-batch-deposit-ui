@@ -35,7 +35,19 @@ export const BoxForLoadYourFile = () => {
 
     const file = event.target.files?.[0]
 
-    if (!file || !connectedAccountAddress || !connectedNetworkId) {
+    if (!connectedAccountAddress) {
+      showErrorMessage(
+        "No connected account, please connect wallet to proceed...",
+      )
+      return
+    }
+    if (!connectedNetworkId) {
+      showErrorMessage(
+        "No connected network, please connect wallet to proceed...",
+      )
+      return
+    }
+    if (!file) {
       return
     }
 
