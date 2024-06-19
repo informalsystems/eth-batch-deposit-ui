@@ -34,7 +34,6 @@ export const BoxForLoadYourFile = () => {
     setIsDraggingOverTarget(false)
 
     const file = event.target.files?.[0]
-    console.log("loading file")
 
     if (!connectedAccountAddress) {
       showErrorMessage(

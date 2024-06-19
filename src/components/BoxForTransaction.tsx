@@ -143,6 +143,12 @@ export const BoxForTransaction = () => {
         }
 
         try {
+          dispatch({
+            type: "setState",
+            payload: {
+              loadingMessage: "Processing Transaction...",
+            },
+          })
           await web3.eth
             .estimateGas(transactionParameters)
             .then(function (gasEstimate) {
@@ -150,23 +156,9 @@ export const BoxForTransaction = () => {
             })
 
           try {
-            dispatch({
-              type: "setState",
-              payload: {
-                loadingMessage: "Processing Transaction...",
-              },
-            })
-
             const response = await web3.eth.sendTransaction(
               transactionParameters,
             )
-
-            dispatch({
-              type: "setState",
-              payload: {
-                loadingMessage: null,
-              },
-            })
 
             setIsTransactionDetailsModalOpen(false)
             setIsTransactionResultModalOpen(true)
@@ -178,6 +170,7 @@ export const BoxForTransaction = () => {
             dispatch({
               type: "setState",
               payload: {
+                loadingMessage: null,
                 loadedFileContents: null,
                 validatedDeposits: [],
                 previouslyDepositedPubkeys: [
@@ -196,14 +189,12 @@ export const BoxForTransaction = () => {
             setIsTransactionDetailsModalOpen(false)
             const serializedError = JSON.stringify(error)
             const deserializedError = JSON.parse(serializedError)
-            console.log("send tx test:", deserializedError)
-            console.log(error)
             if (deserializedError !== null) {
-              if (deserializedError.cause.data.message) {
+              if (deserializedError?.cause?.data?.message) {
                 showErrorMessage(
                   `Error executing transaction 0: ${deserializedError.cause.data.message}`,
                 )
-              } else if (deserializedError.message) {
+              } else if (deserializedError?.message) {
                 showErrorMessage(
                   `Error executing transaction 1: ${deserializedError.message}`,
                 )
@@ -216,13 +207,12 @@ export const BoxForTransaction = () => {
           setIsTransactionDetailsModalOpen(false)
           const serializedError = JSON.stringify(error)
           const deserializedError = JSON.parse(serializedError)
-          console.log(error)
           if (deserializedError !== null) {
-            if (deserializedError.cause.data.message) {
+            if (deserializedError?.cause?.data?.message) {
               showErrorMessage(
                 `Estimate gas error 0: ${deserializedError.cause.data.message}`,
               )
-            } else if (deserializedError.message) {
+            } else if (deserializedError?.message) {
               showErrorMessage(
                 `Estimate gas error 1: ${deserializedError.message}`,
               )
