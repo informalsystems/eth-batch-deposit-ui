@@ -269,7 +269,8 @@ export const BoxForTransaction = () => {
           isOpen={isTransactionDetailsModalOpen}
           onClose={() => setIsTransactionDetailsModalOpen(false)}
         >
-          {connectedAccountAddress !== withdrawalCredentials && (
+          {connectedAccountAddress?.toLowerCase() !==
+            withdrawalCredentials?.toLowerCase() && (
             <>
               <span className="font-bold">
                 Please make sure you have control of both addresses listed
