@@ -12,6 +12,7 @@ const initialState: AppState = {
   notifications: [],
   previouslyDepositedPubkeys: [],
   validatedDeposits: [],
+  withdrawalCredentials: null,
 }
 
 const AppReducer = (state: AppState, action: AppAction) => {
