@@ -91,7 +91,7 @@ export const AppHeader = () => {
                   label: "rewards dashboard",
                 },
                 {
-                  href: "https://informal.systems/staking",
+                  href: "https://eth.informal.systems/staking",
                   label: "stake with us",
                 },
                 {
