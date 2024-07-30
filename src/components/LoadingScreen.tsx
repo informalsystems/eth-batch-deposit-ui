@@ -1,6 +1,6 @@
-import { useAppContext } from "../context"
-import { Box } from "./Box"
-import { Icon } from "./Icon"
+import { useAppContext } from '@/app/batch-deposit/context'
+import { Box } from './Box'
+import { Icon } from './Icon'
 
 export const LoadingScreen = () => {
   const {

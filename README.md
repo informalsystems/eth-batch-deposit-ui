@@ -33,7 +33,7 @@ Make sure you have the following installed:
    ```bash
    git clone https://github.com/informalsystems/eth-batch-deposit-ui.git
    cd eth-batch-deposit-ui
-   npm install
+   npm install --force
    npm run build
    ```
 

@@ -1,14 +1,19 @@
-import { xor } from "lodash"
-import { ReactNode, useEffect } from "react"
-import { twJoin } from "tailwind-merge"
-import { constants } from "../constants"
-import { useAppContext } from "../context"
-import { formatHex } from "../functions/formatHex"
-import { DepositObject, ValidatedDepositObject } from "../types"
-import { Box } from "./Box"
-import { FormattedAddress } from "./FormattedAddress"
-import { Icon } from "./Icon"
-import { LabeledBox } from "./LabeledBox"
+'use client'
+
+import { constants } from '@/app/batch-deposit/constants'
+import { useAppContext } from '@/app/batch-deposit/context'
+import { xor } from 'lodash'
+import { ReactNode, useEffect } from 'react'
+import { twJoin } from 'tailwind-merge'
+import {
+  DepositObject,
+  ValidatedDepositObject,
+} from '../app/batch-deposit/types'
+import { formatHex } from '../lib/formatHex'
+import { Box } from './Box'
+import { FormattedAddress } from './FormattedAddress'
+import { Icon } from './Icon'
+import { LabeledBox } from './LabeledBox'
 
 const { optionalJSONKeys, requiredJSONKeys } = constants
 
@@ -37,27 +42,27 @@ export const BoxForTransactionDetails = () => {
       validatedDeposits: ValidatedDepositObject[],
     ) =>
       dispatch({
-        type: "setState",
+        type: 'setState',
         payload: {
           validatedDeposits,
           withdrawalCredentials: String(
             validatedDeposits[0].withdrawal_credentials,
-          )?.replace(/^010000000000000000000000/, "0x"),
+          )?.replace(/^010000000000000000000000/, '0x'),
         },
       })
 
     const showErrorMessage = (message: string) =>
       dispatch({
-        type: "showNotification",
+        type: 'showNotification',
         payload: {
-          type: "error",
+          type: 'error',
           message,
         },
       })
 
     const validateLoadedFileContents = async () => {
       const formattedAccount = connectedAccountAddress
-        .replace(/^0x/, "010000000000000000000000")
+        .replace(/^0x/, '010000000000000000000000')
         .toLowerCase()
 
       const allRecognizedKeys = [...optionalJSONKeys, ...requiredJSONKeys]
@@ -72,10 +77,10 @@ export const BoxForTransactionDetails = () => {
       ) as DepositObject[]
 
       const loadedObjectsWithValidationErrors = loadedDataParsedToJSON.map(
-        (loadedObject) => {
+        loadedObject => {
           const validationErrors: string[] = []
 
-          if (typeof loadedObject !== "object") {
+          if (typeof loadedObject !== 'object') {
             validationErrors.push(
               `Not an object. Type is "${typeof loadedObject}"`,
             )
@@ -87,7 +92,7 @@ export const BoxForTransactionDetails = () => {
             Object.keys(loadedObject),
           )
 
-          differingPropertyNames.forEach((propertyName) => {
+          differingPropertyNames.forEach(propertyName => {
             if (
               (requiredJSONKeys as Readonly<string[]>).includes(propertyName)
             ) {
@@ -158,22 +163,22 @@ export const BoxForTransactionDetails = () => {
             if (formattedWithdrawalCredentials !== formattedAccount) {
               const showErrorMessage = (message: string) =>
                 dispatch({
-                  type: "showNotification",
+                  type: 'showNotification',
                   payload: {
-                    type: "error",
+                    type: 'error',
                     message,
                   },
                 })
 
               showErrorMessage(
-                "Withdrawal credentials do not match connected wallet. Proceed with caution! withdrawal_credentials: " +
+                'Withdrawal credentials do not match connected wallet. Proceed with caution! withdrawal_credentials: ' +
                   formattedWithdrawalCredentials.slice(24),
               )
             }
 
             if (
               !formattedWithdrawalCredentials.startsWith(
-                "010000000000000000000000",
+                '010000000000000000000000',
               ) ||
               formattedWithdrawalCredentials.length !== 64 ||
               !formattedWithdrawalCredentials.match(/^[0-9a-fA-F]{64}$/)
@@ -197,34 +202,32 @@ export const BoxForTransactionDetails = () => {
 
       // Any objects without errors must be well-formed deposit objects
       const validDeposits = loadedObjectsWithValidationErrors.filter(
-        (deposit) => deposit.validationErrors.length === 0,
+        deposit => deposit.validationErrors.length === 0,
       ) as ValidatedDepositObject[]
 
       if (validDeposits.length === 0) {
         setValidatedDeposits(loadedObjectsWithValidationErrors)
-        showErrorMessage("File loaded with errors")
+        showErrorMessage('File loaded with errors')
         return
       }
 
-      const pubkeysInValidDeposits = validDeposits.map(
-        (object) => object.pubkey,
-      )
+      const pubkeysInValidDeposits = validDeposits.map(object => object.pubkey)
 
       const rawResponseFromFetchDeposits = await fetch(
-        `${connectedNetwork.validationURL}/${pubkeysInValidDeposits.join(",")}/deposits`,
+        `${connectedNetwork.validationURL}/${pubkeysInValidDeposits.join(',')}/deposits`,
       )
 
       if (!rawResponseFromFetchDeposits.ok) {
         setValidatedDeposits(
-          loadedObjectsWithValidationErrors.map((deposit) => ({
+          loadedObjectsWithValidationErrors.map(deposit => ({
             ...deposit,
             validationErrors: [
               ...deposit.validationErrors,
-              "Could not fetch deposits",
+              'Could not fetch deposits',
             ],
           })) as ValidatedDepositObject[],
         )
-        showErrorMessage("Failed trying to fetch deposits")
+        showErrorMessage('Failed trying to fetch deposits')
         return
       }
 
@@ -238,13 +241,13 @@ export const BoxForTransactionDetails = () => {
       )
 
       const loadedDepositsWithServerValidationErrors =
-        loadedObjectsWithValidationErrors.map((deposit) => {
+        loadedObjectsWithValidationErrors.map(deposit => {
           if (
-            "pubkey" in deposit &&
+            'pubkey' in deposit &&
             deposit.pubkey &&
             pubkeysInFetchedDeposits.includes(formatHex(deposit.pubkey, 98))
           ) {
-            deposit.validationErrors.push("Public key has existing deposit(s)")
+            deposit.validationErrors.push('Public key has existing deposit(s)')
           }
 
           return deposit
@@ -253,14 +256,14 @@ export const BoxForTransactionDetails = () => {
       setValidatedDeposits(loadedDepositsWithServerValidationErrors)
 
       const hasAnyErrors = loadedDepositsWithServerValidationErrors.some(
-        (deposit) => deposit.validationErrors?.length >= 1,
+        deposit => deposit.validationErrors?.length >= 1,
       )
 
       dispatch({
-        type: "showNotification",
+        type: 'showNotification',
         payload: {
-          type: hasAnyErrors ? "error" : "confirmation",
-          message: `File loaded ${hasAnyErrors ? "with errors" : "successfully"}`,
+          type: hasAnyErrors ? 'error' : 'confirmation',
+          message: `File loaded ${hasAnyErrors ? 'with errors' : 'successfully'}`,
         },
       })
     }
@@ -284,7 +287,7 @@ export const BoxForTransactionDetails = () => {
     ]
 
   const includedDeposits = validatedDeposits.filter(
-    (validatedDeposit) => validatedDeposit.validationErrors?.length === 0,
+    validatedDeposit => validatedDeposit.validationErrors?.length === 0,
   )
 
   const hasAnythingToShow = validatedDeposits.length >= 1
@@ -305,9 +308,9 @@ export const BoxForTransactionDetails = () => {
             `Total ${connectedNetwork.currency} to be Staked`,
             `${includedDeposits.length * 32} ${connectedNetwork.currency}`,
           ],
-          ["Validator Count", includedDeposits.length],
+          ['Validator Count', includedDeposits.length],
           [
-            "Excluded PubKey Count",
+            'Excluded PubKey Count',
             validatedDeposits.length - includedDeposits.length,
           ],
         ].map(([label, value]) => (
@@ -332,7 +335,7 @@ export const BoxForTransactionDetails = () => {
 
   return (
     <LabeledBox
-      aria-disabled={hasAnythingToShow ? undefined : "true"}
+      aria-disabled={hasAnythingToShow ? undefined : 'true'}
       className="
         flex
         flex-col
@@ -376,14 +379,14 @@ export const BoxForTransactionDetails = () => {
                     self-stretch
                     px-6
                   `,
-                  isValid ? "bg-emerald-600/50" : "bg-red-600/50",
+                  isValid ? 'bg-emerald-600/50' : 'bg-red-600/50',
                 )}
               >
                 <Icon
                   className={twJoin(
-                    isValid ? "text-emerald-50" : "text-red-50",
+                    isValid ? 'text-emerald-50' : 'text-red-50',
                   )}
-                  name={isValid ? "circle-check" : "circle-xmark"}
+                  name={isValid ? 'circle-check' : 'circle-xmark'}
                   variant="solid"
                 />
               </div>
@@ -393,13 +396,13 @@ export const BoxForTransactionDetails = () => {
                   py-3
                 "
               >
-                <strong>PubKey:</strong>{" "}
+                <strong>PubKey:</strong>{' '}
                 {deposit.pubkey ? (
                   <FormattedAddress address={deposit.pubkey as string} />
                 ) : (
-                  "Missing"
+                  'Missing'
                 )}
-                {validationErrors.map((error) => (
+                {validationErrors.map(error => (
                   <div
                     className="
                       ml-6

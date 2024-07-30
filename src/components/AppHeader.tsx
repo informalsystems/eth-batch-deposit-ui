@@ -1,9 +1,12 @@
-import { useEffect } from "react"
-import { useAccount, useBalance, useChainId } from "wagmi"
-import { useAppContext } from "../context"
-import { cleanHex } from "../functions/cleanHex"
-import { Box } from "./Box"
-import { SectionContainer } from "./SectionContainer"
+'use client'
+
+import { useAppContext } from '@/app/batch-deposit/context'
+import Image from 'next/image'
+import { useEffect } from 'react'
+import { useAccount, useBalance, useChainId } from 'wagmi'
+import { cleanHex } from '../lib/cleanHex'
+import { Box } from './Box'
+import { SectionContainer } from './SectionContainer'
 
 export const AppHeader = () => {
   const { dispatch } = useAppContext()
@@ -18,7 +21,7 @@ export const AppHeader = () => {
 
   useEffect(() => {
     dispatch({
-      type: "setState",
+      type: 'setState',
       payload: {
         connectedAccountAddress: address ? cleanHex(address, 42) : null,
       },
@@ -30,7 +33,7 @@ export const AppHeader = () => {
     const balanceNumDecimals = balance.data?.decimals ?? 0
 
     dispatch({
-      type: "setState",
+      type: 'setState',
       payload: {
         connectedAccountBalance: (
           balanceValue /
@@ -42,7 +45,7 @@ export const AppHeader = () => {
 
   useEffect(() => {
     dispatch({
-      type: "setState",
+      type: 'setState',
       payload: {
         connectedNetworkId: chainId,
       },
@@ -71,7 +74,7 @@ export const AppHeader = () => {
             gap-6
           "
         >
-          <img
+          <Image
             className="size-16"
             alt="logo"
             src="/batch-deposit/images/logo.png"
@@ -85,18 +88,18 @@ export const AppHeader = () => {
               "
             >
               {[
-                { href: "https://informal.systems", label: "informal systems" },
+                { href: 'https://informal.systems', label: 'informal systems' },
                 {
-                  href: "https://eth.informal.systems/rewards",
-                  label: "rewards dashboard",
+                  href: 'https://eth.informal.systems/rewards',
+                  label: 'rewards dashboard',
                 },
                 {
-                  href: "https://eth.informal.systems/staking",
-                  label: "stake with us",
+                  href: 'https://eth.informal.systems/staking',
+                  label: 'stake with us',
                 },
                 {
-                  href: "https://eth.informal.systems/batch-deposit",
-                  label: "batch deposit",
+                  href: 'https://eth.informal.systems/batch-deposit',
+                  label: 'batch deposit',
                 },
               ].map(({ href, label }) => (
                 <li key={label}>
@@ -116,6 +119,7 @@ export const AppHeader = () => {
           </nav>
 
           <div className="text-right">
+            {/* @ts-ignore-next-line */}
             <w3m-button />
           </div>
         </div>

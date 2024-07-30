@@ -1,18 +1,20 @@
-import { MouseEvent, useState } from "react"
-import { twJoin } from "tailwind-merge"
-import { useConnectorClient } from "wagmi"
-import { TransactionReceipt, Web3 } from "web3"
-import abi from "../abi.json"
-import { constants } from "../constants"
-import { useAppContext } from "../context"
-import { cleanHex } from "../functions/cleanHex"
-import { formatHex } from "../functions/formatHex"
-import { Box } from "./Box"
-import { Button } from "./Button"
-import { FormattedAddress } from "./FormattedAddress"
-import { Icon } from "./Icon"
-import { LabeledBox } from "./LabeledBox"
-import { ModalWindow } from "./ModalWindow"
+'use client'
+
+import abi from '@/app/batch-deposit/abi.json'
+import { constants } from '@/app/batch-deposit/constants'
+import { useAppContext } from '@/app/batch-deposit/context'
+import { MouseEvent, useState } from 'react'
+import { twJoin } from 'tailwind-merge'
+import { useConnectorClient } from 'wagmi'
+import { TransactionReceipt, Web3 } from 'web3'
+import { cleanHex } from '../lib/cleanHex'
+import { formatHex } from '../lib/formatHex'
+import { Box } from './Box'
+import { Button } from './Button'
+import { FormattedAddress } from './FormattedAddress'
+import { Icon } from './Icon'
+import { LabeledBox } from './LabeledBox'
+import { ModalWindow } from './ModalWindow'
 
 export const BoxForTransaction = () => {
   const [isTransactionDetailsModalOpen, setIsTransactionDetailsModalOpen] =
@@ -47,7 +49,7 @@ export const BoxForTransaction = () => {
     ]
 
   const validDeposits = validatedDeposits.filter(
-    (deposit) => deposit.validationErrors?.length === 0,
+    deposit => deposit.validationErrors?.length === 0,
   )
 
   const canSendTransaction =
@@ -56,9 +58,9 @@ export const BoxForTransaction = () => {
 
   const showErrorMessage = (message: string) =>
     dispatch({
-      type: "showNotification",
+      type: 'showNotification',
       payload: {
-        type: "error",
+        type: 'error',
         message,
       },
     })
@@ -86,7 +88,7 @@ export const BoxForTransaction = () => {
 
       const totalAmountInWei = web3.utils.toWei(
         (totalAmount / 1000000000).toString(),
-        "ether",
+        'ether',
       )
 
       const {
@@ -144,9 +146,9 @@ export const BoxForTransaction = () => {
 
         try {
           dispatch({
-            type: "setState",
+            type: 'setState',
             payload: {
-              loadingMessage: "Processing Transaction...",
+              loadingMessage: 'Processing Transaction...',
             },
           })
           await web3.eth
@@ -164,11 +166,11 @@ export const BoxForTransaction = () => {
             setIsTransactionResultModalOpen(true)
             setTransactionResult({
               blockHash: cleanHex(`${response.blockHash}`, 66),
-              blockNumber: `${response.blockNumber}`.replace(/[^0-9]/g, ""),
+              blockNumber: `${response.blockNumber}`.replace(/[^0-9]/g, ''),
               transactionHash: cleanHex(`${response.transactionHash}`, 66),
             })
             dispatch({
-              type: "setState",
+              type: 'setState',
               payload: {
                 loadingMessage: null,
                 loadedFileContents: null,
@@ -181,7 +183,7 @@ export const BoxForTransaction = () => {
             })
           } catch (error) {
             dispatch({
-              type: "setState",
+              type: 'setState',
               payload: {
                 loadingMessage: null,
               },
@@ -233,7 +235,7 @@ export const BoxForTransaction = () => {
 
   return (
     <LabeledBox
-      aria-disabled={canSendTransaction ? undefined : "true"}
+      aria-disabled={canSendTransaction ? undefined : 'true'}
       className={twJoin(
         `
           flex
@@ -311,7 +313,7 @@ export const BoxForTransaction = () => {
           {(
             [
               [
-                "Transaction Hash",
+                'Transaction Hash',
                 <Box
                   as="a"
                   href={`${connectedNetwork.pubkeyBeaconchainURL}/tx/${transactionResult?.transactionHash}`}
@@ -329,7 +331,7 @@ export const BoxForTransaction = () => {
                 </Box>,
               ],
               [
-                "Block Hash",
+                'Block Hash',
                 <Box
                   as="a"
                   href={`${connectedNetwork.pubkeyBeaconchainURL}/block/${transactionResult?.blockHash}`}
@@ -347,7 +349,7 @@ export const BoxForTransaction = () => {
                 </Box>,
               ],
               [
-                "Block Number",
+                'Block Number',
                 <Box
                   as="a"
                   href={`${connectedNetwork.pubkeyBeaconchainURL}/block/${transactionResult?.blockNumber}`}

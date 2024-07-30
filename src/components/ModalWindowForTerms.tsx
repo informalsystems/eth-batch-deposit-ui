@@ -1,7 +1,10 @@
-import { ChangeEvent, useState } from "react"
-import { useAppContext } from "../context"
-import { Button } from "./Button"
-import { ModalWindow } from "./ModalWindow"
+'use client'
+
+import { useAppContext } from '@/app/batch-deposit/context'
+import Image from 'next/image'
+import { ChangeEvent, useState } from 'react'
+import { Button } from './Button'
+import { ModalWindow } from './ModalWindow'
 
 export const ModalWindowForTerms = () => {
   const [isChecked, setIsChecked] = useState(false)
@@ -21,7 +24,7 @@ export const ModalWindowForTerms = () => {
     }
 
     dispatch({
-      type: "setState",
+      type: 'setState',
       payload: {
         isTermsAgreed: true,
       },
@@ -47,10 +50,10 @@ export const ModalWindowForTerms = () => {
           rel="noreferrer"
           href="https://informal.systems"
         >
-          <img
-            src="/batch-deposit/images/logo.png"
+          <Image
             alt="Logo"
             className="logo img-center w-16"
+            src="/batch-deposit/images/logo.png"
           />
         </a>
 
@@ -135,7 +138,7 @@ export const ModalWindowForTerms = () => {
               id="termsandconditions"
               type="checkbox"
               onChange={handleChange}
-            />{" "}
+            />{' '}
             I agree to the terms and conditions
           </label>
         </div>
@@ -145,7 +148,7 @@ export const ModalWindowForTerms = () => {
             disabled={!isChecked}
             onClick={handleSubmit}
           >
-            {isChecked ? "Continue" : "Agree to Continue"}
+            {isChecked ? 'Continue' : 'Agree to Continue'}
           </Button>
         </div>
       </div>

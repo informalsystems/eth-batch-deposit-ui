@@ -1,11 +1,13 @@
-import { ChangeEvent, useState } from "react"
-import { twJoin } from "tailwind-merge"
-import { constants } from "../constants"
-import { useAppContext } from "../context"
-import { Box } from "./Box"
-import { Button } from "./Button"
-import { Icon } from "./Icon"
-import { LabeledBox } from "./LabeledBox"
+'use client'
+
+import { constants } from '@/app/batch-deposit/constants'
+import { useAppContext } from '@/app/batch-deposit/context'
+import { ChangeEvent, useState } from 'react'
+import { twJoin } from 'tailwind-merge'
+import { Box } from './Box'
+import { Button } from './Button'
+import { Icon } from './Icon'
+import { LabeledBox } from './LabeledBox'
 
 export const BoxForLoadYourFile = () => {
   const {
@@ -16,16 +18,16 @@ export const BoxForLoadYourFile = () => {
   const [isDraggingOverTarget, setIsDraggingOverTarget] = useState(false)
 
   const fileHasErrors = validatedDeposits.some(
-    (deposit) => deposit.validationErrors?.length,
+    deposit => deposit.validationErrors?.length,
   )
 
   const hasSelectedFile = validatedDeposits.length >= 1
 
   const showErrorMessage = (message: string) =>
     dispatch({
-      type: "showNotification",
+      type: 'showNotification',
       payload: {
-        type: "error",
+        type: 'error',
         message,
       },
     })
@@ -37,13 +39,13 @@ export const BoxForLoadYourFile = () => {
 
     if (!connectedAccountAddress) {
       showErrorMessage(
-        "No connected account, please connect wallet to proceed...",
+        'No connected account, please connect wallet to proceed...',
       )
       return
     }
     if (!connectedNetworkId) {
       showErrorMessage(
-        "No connected network, please connect wallet to proceed...",
+        'No connected network, please connect wallet to proceed...',
       )
       return
     }
@@ -52,25 +54,25 @@ export const BoxForLoadYourFile = () => {
     }
 
     if (!(file.size < 1024 * 1024)) {
-      showErrorMessage("File exceeds 1MB limit")
+      showErrorMessage('File exceeds 1MB limit')
       return
     }
 
-    if (file.type !== "application/json") {
-      showErrorMessage("File is not of type application/json")
+    if (file.type !== 'application/json') {
+      showErrorMessage('File is not of type application/json')
       return
     }
 
     const reader = new FileReader()
 
-    reader.onload = async (event) => {
-      const rawJSON = String(event.target?.result ?? "[]")
+    reader.onload = async event => {
+      const rawJSON = String(event.target?.result ?? '[]')
 
       try {
         const loadedDataParsedToJSON = JSON.parse(rawJSON) as object | unknown[]
 
         if (!Array.isArray(loadedDataParsedToJSON)) {
-          showErrorMessage("File is not an array of objects")
+          showErrorMessage('File is not an array of objects')
           return
         }
 
@@ -82,7 +84,7 @@ export const BoxForLoadYourFile = () => {
         }
 
         dispatch({
-          type: "setState",
+          type: 'setState',
           payload: {
             loadedFileContents: rawJSON,
           },
@@ -171,7 +173,7 @@ export const BoxForLoadYourFile = () => {
             group-[&.has-selected-file]:text-white
             group-[&.is-dragging-over]:text-white
           "
-          name={hasSelectedFile ? "file-circle-check" : "file-circle-question"}
+          name={hasSelectedFile ? 'file-circle-check' : 'file-circle-question'}
           variant="thin"
         />
 

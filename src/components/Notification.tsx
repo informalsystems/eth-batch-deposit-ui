@@ -1,21 +1,23 @@
+'use client'
+
+import { constants } from '@/app/batch-deposit/constants'
 import {
   ComponentPropsWithoutRef,
   MouseEvent,
   useEffect,
   useState,
-} from "react"
-import { twJoin } from "tailwind-merge"
-import { constants } from "../constants"
-import { AppNotification } from "../types"
-import { Box } from "./Box"
-import { Icon, IconName, IconVariant } from "./Icon"
+} from 'react'
+import { twJoin } from 'tailwind-merge'
+import { AppNotification } from '../app/batch-deposit/types'
+import { Box } from './Box'
+import { Icon, IconName, IconVariant } from './Icon'
 
 export { Notification }
 
-interface NotificationProps extends ComponentPropsWithoutRef<"div"> {
+interface NotificationProps extends ComponentPropsWithoutRef<'div'> {
   iconName?: IconName
   iconVariant?: IconVariant
-  variant: AppNotification["type"]
+  variant: AppNotification['type']
   onDismiss: () => void
 }
 
@@ -61,7 +63,7 @@ const classNamesByVariant = {
       `,
       messageContainer: ``,
     },
-    iconName: "circle-check",
+    iconName: 'circle-check',
   },
   error: {
     className: {
@@ -73,7 +75,7 @@ const classNamesByVariant = {
       `,
       messageContainer: ``,
     },
-    iconName: "triangle-exclamation",
+    iconName: 'triangle-exclamation',
   },
 } as const
 
@@ -81,7 +83,7 @@ const Notification = ({
   children,
   variant,
   iconName = classNamesByVariant[variant].iconName,
-  iconVariant = "solid",
+  iconVariant = 'solid',
   onDismiss,
 }: NotificationProps) => {
   const [hasRendered, setHasRendered] = useState(false)
@@ -94,7 +96,7 @@ const Notification = ({
   }
 
   useEffect(() => {
-    if (variant === "confirmation") {
+    if (variant === 'confirmation') {
       const timer = setTimeout(() => {
         setHasRendered(true)
       }, 1)
@@ -112,7 +114,7 @@ const Notification = ({
         classNamesByVariant[variant].className.container,
       )}
     >
-      {variant === "confirmation" && (
+      {variant === 'confirmation' && (
         <div
           className={twJoin(
             `

@@ -1,12 +1,12 @@
-import { MouseEvent } from "react"
-import { useSwitchChain } from "wagmi"
-import { constants } from "../constants"
-import { useAppContext } from "../context"
-import { Box } from "./Box"
-import { Button } from "./Button"
-import { FormattedAddress } from "./FormattedAddress"
-import { Icon } from "./Icon"
-import { LabeledBox } from "./LabeledBox"
+import { constants } from '@/app/batch-deposit/constants'
+import { useAppContext } from '@/app/batch-deposit/context'
+import { MouseEvent } from 'react'
+import { useSwitchChain } from 'wagmi'
+import { Box } from './Box'
+import { Button } from './Button'
+import { FormattedAddress } from './FormattedAddress'
+import { Icon } from './Icon'
+import { LabeledBox } from './LabeledBox'
 
 export const BoxForNetworkDetails = () => {
   const {
@@ -81,7 +81,7 @@ export const BoxForNetworkDetails = () => {
                         networkId: idAsNumber,
                       })}
                     >
-                      {!isActive && "Switch to "} {label}
+                      {!isActive && 'Switch to '} {label}
                     </Button>
                   </li>
                 )
@@ -107,8 +107,8 @@ export const BoxForNetworkDetails = () => {
         (
           [
             {
-              icon: "id-card-clip",
-              label: "Connected Account",
+              icon: 'id-card-clip',
+              label: 'Connected Account',
               value: (
                 <Box
                   as="a"
@@ -126,13 +126,13 @@ export const BoxForNetworkDetails = () => {
               ),
             },
             {
-              icon: "wallet",
-              label: "Wallet Balance",
+              icon: 'wallet',
+              label: 'Wallet Balance',
               value: `${connectedAccountBalance} ${connectedNetwork.currency}`,
             },
             {
-              icon: "file-contract",
-              label: "Deposit Contract",
+              icon: 'file-contract',
+              label: 'Deposit Contract',
               value: (
                 <Box
                   as="a"
@@ -152,8 +152,8 @@ export const BoxForNetworkDetails = () => {
               ),
             },
             {
-              icon: "arrow-up-to-line",
-              label: "Max Amount Per Tx",
+              icon: 'arrow-up-to-line',
+              label: 'Max Amount Per Tx',
               value: `${(constants.maximumDepositsPerFile * 32).toLocaleString()} ${connectedNetwork.currency}`,
             },
           ] as const

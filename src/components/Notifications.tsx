@@ -1,10 +1,12 @@
-import { useEffect } from "react"
-import { twMerge } from "tailwind-merge"
-import { constants } from "../constants"
-import { useAppContext } from "../context"
-import { AppNotification } from "../types"
-import { Button } from "./Button"
-import { Notification } from "./Notification"
+'use client'
+
+import { constants } from '@/app/batch-deposit/constants'
+import { useAppContext } from '@/app/batch-deposit/context'
+import { useEffect } from 'react'
+import { twMerge } from 'tailwind-merge'
+import { AppNotification } from '../app/batch-deposit/types'
+import { Button } from './Button'
+import { Notification } from './Notification'
 
 export { Notifications }
 
@@ -19,10 +21,10 @@ const Notifications = () => {
   const dismissNotifications = ({
     notificationIds,
   }: {
-    notificationIds: AppNotification["id"][]
+    notificationIds: AppNotification['id'][]
   }) =>
     dispatch({
-      type: "dismissNotifications",
+      type: 'dismissNotifications',
       payload: {
         notificationIds,
       },
@@ -30,14 +32,14 @@ const Notifications = () => {
 
   useEffect(() => {
     const confirmationNotifications = notifications.filter(
-      ({ type }) => type === "confirmation",
+      ({ type }) => type === 'confirmation',
     )
 
     const timers = confirmationNotifications.map(({ id }, index) =>
       setTimeout(
         () =>
           dispatch({
-            type: "dismissNotifications",
+            type: 'dismissNotifications',
             payload: {
               notificationIds: [id],
             },
@@ -47,7 +49,7 @@ const Notifications = () => {
     )
 
     return () => {
-      timers.map((timer) => clearTimeout(timer))
+      timers.map(timer => clearTimeout(timer))
     }
   }, [dispatch, notifications])
 
