@@ -17,7 +17,7 @@ const projectId = "87af3006d417f58b484b0544e736aa59"
 const metadata = {
   name: "Batch Deposit Ethereum Validators",
   description: "Powered by Informal Systems",
-  url: "https://eth.informal.systems/batch-deposit", // origin must match your domain & subdomain
+  url: "https://eth.informal.systems", // origin must match your domain & subdomain
   icons: ["https://avatars.githubusercontent.com/u/37784886"],
 }
 

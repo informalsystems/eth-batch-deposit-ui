@@ -126,7 +126,7 @@ export const BoxForTransaction = () => {
       )
 
       try {
-        const defaultGas: bigint = BigInt(50000)
+        const defaultGas: bigint = BigInt(500000)
         const transactionParameters = {
           from: connectedAccountAddress!,
           to: smartContractAddress,
@@ -150,8 +150,21 @@ export const BoxForTransaction = () => {
             },
           })
 
-          const gasEstimate = await web3.eth.estimateGas(transactionParameters)
-          transactionParameters.gas = gasEstimate * BigInt(1.05)
+          try {
+            const gasEstimate = await web3.eth.estimateGas(
+              transactionParameters,
+            )
+            transactionParameters.gas = gasEstimate
+          } catch (error) {
+            dispatch({
+              type: "setState",
+              payload: {
+                loadingMessage: null,
+              },
+            })
+            setIsTransactionDetailsModalOpen(false)
+            showErrorMessage(`Error estimating gas: ${error}`)
+          }
 
           try {
             const response = await web3.eth.sendTransaction(
