@@ -204,6 +204,12 @@ export const BoxForTransaction = () => {
             }
           }
         } catch (error) {
+          dispatch({
+            type: "setState",
+            payload: {
+              loadingMessage: null,
+            },
+          })
           setIsTransactionDetailsModalOpen(false)
           const serializedError = JSON.stringify(error)
           const deserializedError = JSON.parse(serializedError)
