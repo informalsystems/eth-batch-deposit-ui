@@ -71,6 +71,27 @@ export const BoxForTransactionDetails = () => {
         loadedFileContents,
       ) as DepositObject[]
 
+      const withdrawalCredentials = String(
+        loadedDataParsedToJSON[0].withdrawal_credentials,
+      )?.replace(/^010000000000000000000000/, "0x")
+
+      if (withdrawalCredentials !== formattedAccount) {
+        const showErrorMessage = (message: string) =>
+          dispatch({
+            type: "showNotification",
+            payload: {
+              type: "error",
+              message,
+            },
+          })
+
+        console.log(showErrorMessage)
+        showErrorMessage(
+          "Withdrawal credentials do not match connected wallet. Proceed with caution! withdrawal_credentials: " +
+            withdrawalCredentials.slice(24),
+        )
+      }
+
       const loadedObjectsWithValidationErrors = loadedDataParsedToJSON.map(
         (loadedObject) => {
           const validationErrors: string[] = []
@@ -154,22 +175,6 @@ export const BoxForTransactionDetails = () => {
             const formattedWithdrawalCredentials = String(
               loadedObject.withdrawal_credentials,
             ).toLowerCase()
-
-            if (formattedWithdrawalCredentials !== formattedAccount) {
-              const showErrorMessage = (message: string) =>
-                dispatch({
-                  type: "showNotification",
-                  payload: {
-                    type: "error",
-                    message,
-                  },
-                })
-
-              showErrorMessage(
-                "Withdrawal credentials do not match connected wallet. Proceed with caution! withdrawal_credentials: " +
-                  formattedWithdrawalCredentials.slice(24),
-              )
-            }
 
             if (
               !formattedWithdrawalCredentials.startsWith(

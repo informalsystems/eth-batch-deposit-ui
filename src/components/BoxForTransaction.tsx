@@ -126,7 +126,7 @@ export const BoxForTransaction = () => {
       )
 
       try {
-        const defaultGas: bigint = BigInt(100000)
+        const defaultGas: bigint = BigInt(50000)
         const transactionParameters = {
           from: connectedAccountAddress!,
           to: smartContractAddress,
@@ -149,11 +149,9 @@ export const BoxForTransaction = () => {
               loadingMessage: "Processing Transaction...",
             },
           })
-          await web3.eth
-            .estimateGas(transactionParameters)
-            .then(function (gasEstimate) {
-              transactionParameters.gas = gasEstimate
-            })
+
+          const gasEstimate = await web3.eth.estimateGas(transactionParameters)
+          transactionParameters.gas = gasEstimate * BigInt(1.05)
 
           try {
             const response = await web3.eth.sendTransaction(
@@ -299,6 +297,10 @@ export const BoxForTransaction = () => {
             </>
           )}
           <span className="font-bold">All set?</span>
+          <span className="text-xs">
+            Please ensure you have control of withdrawal credentials for each
+            validator.
+          </span>
           <Button onClick={handleClickExecuteTransaction}>
             Execute Transaction
           </Button>
