@@ -77,6 +77,60 @@ export const BoxForTransaction = () => {
         connectedNetworkId as keyof typeof constants.networksById
       ]
 
+    // Prepare transaction parameters
+
+    interface TransactionParameters {
+      from: string
+      to: string
+      value: string | number
+      gas: bigint
+      data: string
+    }
+
+    let transactionParameters: TransactionParameters = {
+      from: "",
+      to: "",
+      value: "0",
+      gas: BigInt(0),
+      data: "",
+    }
+
+    const {
+      allPubkeys,
+      allWithdrawalCredentials,
+      allSignatures,
+      allDepositDataRoots,
+    } = validDeposits.reduce<{
+      allPubkeys: string[]
+      allWithdrawalCredentials: string[]
+      allSignatures: string[]
+      allDepositDataRoots: string[]
+    }>(
+      (acc, deposit) => {
+        return {
+          allPubkeys: [...acc.allPubkeys, formatHex(deposit.pubkey!, 96)],
+          allWithdrawalCredentials: [
+            ...acc.allWithdrawalCredentials,
+            formatHex(deposit.withdrawal_credentials!, 96),
+          ],
+          allSignatures: [
+            ...acc.allSignatures,
+            formatHex(deposit.signature!, 192),
+          ],
+          allDepositDataRoots: [
+            ...acc.allDepositDataRoots,
+            formatHex(deposit.deposit_data_root!, 64),
+          ],
+        }
+      },
+      {
+        allPubkeys: [],
+        allWithdrawalCredentials: [],
+        allSignatures: [],
+        allDepositDataRoots: [],
+      },
+    )
+
     try {
       const contractABI = new web3.eth.Contract(abi, smartContractAddress)
 
@@ -89,162 +143,95 @@ export const BoxForTransaction = () => {
         "ether",
       )
 
-      const {
+      const defaultGas: bigint = BigInt(constants.maxGas)
+      transactionParameters = {
+        from: connectedAccountAddress!,
+        to: smartContractAddress,
+        value: totalAmountInWei,
+        gas: defaultGas,
+        data: contractABI.methods
+          .batchDeposit(
+            allPubkeys,
+            allWithdrawalCredentials,
+            allSignatures,
+            allDepositDataRoots,
+          )
+          .encodeABI(),
+      }
+
+      // Check if all values are populated
+      const areParametersPopulated = [
+        transactionParameters.from,
+        transactionParameters.to,
+        transactionParameters.value,
+        transactionParameters.gas,
+        transactionParameters.data,
         allPubkeys,
         allWithdrawalCredentials,
         allSignatures,
         allDepositDataRoots,
-      } = validDeposits.reduce<{
-        allPubkeys: string[]
-        allWithdrawalCredentials: string[]
-        allSignatures: string[]
-        allDepositDataRoots: string[]
-      }>(
-        (acc, deposit) => {
-          return {
-            allPubkeys: [...acc.allPubkeys, formatHex(deposit.pubkey!, 96)],
-            allWithdrawalCredentials: [
-              ...acc.allWithdrawalCredentials,
-              formatHex(deposit.withdrawal_credentials!, 96),
-            ],
-            allSignatures: [
-              ...acc.allSignatures,
-              formatHex(deposit.signature!, 192),
-            ],
-            allDepositDataRoots: [
-              ...acc.allDepositDataRoots,
-              formatHex(deposit.deposit_data_root!, 64),
-            ],
-          }
-        },
-        {
-          allPubkeys: [],
-          allWithdrawalCredentials: [],
-          allSignatures: [],
-          allDepositDataRoots: [],
-        },
-      )
+      ].every((param) => param !== undefined && param !== null && param !== "")
 
-      try {
-        const defaultGas: bigint = BigInt(500000)
-        const transactionParameters = {
-          from: connectedAccountAddress!,
-          to: smartContractAddress,
-          value: totalAmountInWei,
-          gas: defaultGas,
-          data: contractABI.methods
-            .batchDeposit(
-              allPubkeys,
-              allWithdrawalCredentials,
-              allSignatures,
-              allDepositDataRoots,
-            )
-            .encodeABI(),
-        }
-
-        try {
-          dispatch({
-            type: "setState",
-            payload: {
-              loadingMessage: "Processing Transaction...",
-            },
-          })
-
-          try {
-            const gasEstimate = await web3.eth.estimateGas(
-              transactionParameters,
-            )
-            transactionParameters.gas = gasEstimate
-          } catch (error) {
-            dispatch({
-              type: "setState",
-              payload: {
-                loadingMessage: null,
-              },
-            })
-            setIsTransactionDetailsModalOpen(false)
-            showErrorMessage(`Error estimating gas: ${error}`)
-          }
-
-          try {
-            const response = await web3.eth.sendTransaction(
-              transactionParameters,
-            )
-
-            setIsTransactionDetailsModalOpen(false)
-            setIsTransactionResultModalOpen(true)
-            setTransactionResult({
-              blockHash: cleanHex(`${response.blockHash}`, 66),
-              blockNumber: `${response.blockNumber}`.replace(/[^0-9]/g, ""),
-              transactionHash: cleanHex(`${response.transactionHash}`, 66),
-            })
-            dispatch({
-              type: "setState",
-              payload: {
-                loadingMessage: null,
-                loadedFileContents: null,
-                validatedDeposits: [],
-                previouslyDepositedPubkeys: [
-                  ...previouslyDepositedPubkeys,
-                  ...allPubkeys,
-                ],
-              },
-            })
-          } catch (error) {
-            dispatch({
-              type: "setState",
-              payload: {
-                loadingMessage: null,
-              },
-            })
-            setIsTransactionDetailsModalOpen(false)
-            const serializedError = JSON.stringify(error)
-            const deserializedError = JSON.parse(serializedError)
-            if (deserializedError !== null) {
-              if (deserializedError?.cause?.data?.message) {
-                showErrorMessage(
-                  `Error executing transaction 0: ${deserializedError.cause.data.message}`,
-                )
-              } else if (deserializedError?.message) {
-                showErrorMessage(
-                  `Error executing transaction 1: ${deserializedError.message}`,
-                )
-              } else {
-                showErrorMessage(`Error executing transaction 2: ${error}`)
-              }
-            }
-          }
-        } catch (error) {
-          dispatch({
-            type: "setState",
-            payload: {
-              loadingMessage: null,
-            },
-          })
-          setIsTransactionDetailsModalOpen(false)
-          const serializedError = JSON.stringify(error)
-          const deserializedError = JSON.parse(serializedError)
-          if (deserializedError !== null) {
-            if (deserializedError?.cause?.data?.message) {
-              showErrorMessage(
-                `Estimate gas error 0: ${deserializedError.cause.data.message}`,
-              )
-            } else if (deserializedError?.message) {
-              showErrorMessage(
-                `Estimate gas error 1: ${deserializedError.message}`,
-              )
-            } else {
-              showErrorMessage(`Estimate gas error 3: ${error}`)
-            }
-          }
-        }
-      } catch (error) {
-        setIsTransactionDetailsModalOpen(false)
-        showErrorMessage(`Error encoding ABI: ${error}`)
+      if (!areParametersPopulated) {
+        throw new Error("Transaction parameters are not fully populated")
       }
     } catch (error) {
       setIsTransactionDetailsModalOpen(false)
-      showErrorMessage(`Error initializing contract instance: ${error}`)
+      showErrorMessage(`Error preparing transaction parameters: ${error}`)
+    }
+
+    // Estimate max gas and adjust gas limit by 20%
+
+    try {
+      const gasEstimate = await web3.eth.estimateGas(transactionParameters)
+      transactionParameters.gas = (gasEstimate * BigInt(12)) / BigInt(10)
+    } catch (error) {
+      setIsTransactionDetailsModalOpen(false)
+      showErrorMessage(`Error estimating gas: ${error}`)
+    }
+
+    // Send transaction
+
+    try {
+      dispatch({
+        type: "setState",
+        payload: {
+          loadingMessage: "Processing Transaction...",
+        },
+      })
+
+      const response = await web3.eth.sendTransaction(transactionParameters)
+
+      setIsTransactionDetailsModalOpen(false)
+      setIsTransactionResultModalOpen(true)
+      setTransactionResult({
+        blockHash: cleanHex(`${response.blockHash}`, 66),
+        blockNumber: `${response.blockNumber}`.replace(/[^0-9]/g, ""),
+        transactionHash: cleanHex(`${response.transactionHash}`, 66),
+      })
+
+      dispatch({
+        type: "setState",
+        payload: {
+          loadingMessage: null,
+          loadedFileContents: null,
+          validatedDeposits: [],
+          previouslyDepositedPubkeys: [
+            ...previouslyDepositedPubkeys,
+            ...allPubkeys,
+          ],
+        },
+      })
+    } catch (error) {
+      dispatch({
+        type: "setState",
+        payload: {
+          loadingMessage: null,
+        },
+      })
+
+      setIsTransactionDetailsModalOpen(false)
+      showErrorMessage(`Error executing transaction: ${error}`)
     }
   }
 
@@ -286,29 +273,25 @@ export const BoxForTransaction = () => {
           isOpen={isTransactionDetailsModalOpen}
           onClose={() => setIsTransactionDetailsModalOpen(false)}
         >
-          {connectedAccountAddress?.toLowerCase() !==
-            withdrawalCredentials?.toLowerCase() && (
-            <>
-              <span className="font-bold">
-                Please make sure you have control of both addresses listed
-                below:
-              </span>
-              <a
-                href={`${connectedNetwork.pubkeyBeaconchainURL}/address/${connectedAccountAddress}`}
-                target="_blank"
-                className="transition duration-300 hover:opacity-50"
-              >
-                Connected Account: {connectedAccountAddress}
-              </a>
-              <a
-                href={`${connectedNetwork.pubkeyBeaconchainURL}/address/${withdrawalCredentials}`}
-                target="_blank"
-                className="transition duration-300 hover:opacity-50"
-              >
-                Withdrawal Credentials: {withdrawalCredentials}
-              </a>
-            </>
-          )}
+          <>
+            <span className="font-bold">
+              Please make sure you have control of both addresses listed below:
+            </span>
+            <a
+              href={`${connectedNetwork.pubkeyBeaconchainURL}/address/${connectedAccountAddress}`}
+              target="_blank"
+              className="transition duration-300 hover:opacity-50"
+            >
+              Connected Account: <b>{connectedAccountAddress?.toLowerCase()}</b>
+            </a>
+            <a
+              href={`${connectedNetwork.pubkeyBeaconchainURL}/address/${withdrawalCredentials}`}
+              target="_blank"
+              className="transition duration-300 hover:opacity-50"
+            >
+              Withdrawal Credentials: <b>{withdrawalCredentials}</b>
+            </a>
+          </>
           <span className="font-bold">All set?</span>
           <span className="text-xs">
             Please ensure you have control of withdrawal credentials for each
