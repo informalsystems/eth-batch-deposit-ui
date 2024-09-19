@@ -56,9 +56,7 @@ export const BoxForTransactionDetails = () => {
       })
 
     const validateLoadedFileContents = async () => {
-      const formattedAccount = connectedAccountAddress
-        .replace(/^0x/, "010000000000000000000000")
-        .toLowerCase()
+      const formattedAccount = connectedAccountAddress.toLowerCase()
 
       const allRecognizedKeys = [...optionalJSONKeys, ...requiredJSONKeys]
 
@@ -85,7 +83,6 @@ export const BoxForTransactionDetails = () => {
             },
           })
 
-        console.log(showErrorMessage)
         showErrorMessage(
           "Withdrawal credentials do not match connected wallet. Proceed with caution! withdrawal_credentials: " +
             withdrawalCredentials.slice(24),

@@ -1,6 +1,7 @@
 export const constants = {
   dismissConfirmationNotificationsDelay: 5000, // milliseconds
   maximumDepositsPerFile: 100,
+  maxGas: 500000,
   networksById: {
     1: {
       currency: "ETH",
